@@ -6,6 +6,7 @@
 import { useEffect, useState } from "react"
 import { useNavigate } from 'react-router'
 import { FormatForm } from "./FormatForm"
+import { Footer } from "./Footer"
 
 export const FormatFile = () => {
     const [userInput, setUserInput] = useState({
@@ -172,10 +173,13 @@ export const FormatFile = () => {
     }
 
     return (
-        <FormatForm emptyInput={emptyInput}
-            handleUserInputChange={handleUserInputChange}
-            handleFormat={handleFormat}
-            finalJSON={finalJSON}
-            userInput={userInput} />
+        <>
+            <FormatForm emptyInput={emptyInput}
+                handleUserInputChange={handleUserInputChange}
+                handleFormat={handleFormat}
+                finalJSON={finalJSON}
+                userInput={userInput} />
+            <Footer />
+        </>
     )
 }

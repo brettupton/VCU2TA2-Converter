@@ -81,6 +81,10 @@ export const MissingCRN = () => {
         }
     }
 
+    window.ipcRenderer.on('CSV-error', (event, err) => {
+        console.error(err)
+    })
+
     return (
         <div className="container">
             <div className="row mb-3">
@@ -88,7 +92,7 @@ export const MissingCRN = () => {
                     Missing Sections:
                 </div>
             </div>
-            <table class="table table-striped">
+            <table className="table table-striped">
                 <thead>
                     <tr>
                         <th scope="col">CRN</th>
@@ -104,7 +108,7 @@ export const MissingCRN = () => {
                                 <td>{course["CRN"]}</td>
                                 <td>{course["Subject"]}</td>
                                 <td>{course["Course_Num"]}</td>
-                                <td><input type="text" id={course["CRN"]} placeholder="Section" onChange={handleSectionChange} /></td>
+                                <td><input type="text" id={course["CRN"]} placeholder="Section" onChange={handleSectionChange} maxLength={3} /></td>
                             </tr>
                         )
                     })}

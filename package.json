@@ -1,8 +1,11 @@
 {
-  "name": "enrollmentreact",
-  "version": "0.1.0",
+  "name": "vcu2ta2",
+  "version": "1.5.1",
   "private": true,
-  "main": "public/electron",
+  "main": "public/electron.js",
+  "description": "Convert VCU XLSX to TA2 CSV",
+  "author": "Canari",
+  "homepage": "./",
   "dependencies": {
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",
@@ -21,11 +24,13 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build",
+    "react-build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "dev": "concurrently -k \"cross-env BROWSER=none npm start\" \"npm:electron\"",
-    "electron": "ping localhost && electron ."
+    "electron": "ping localhost && set APP_DEV=true && electron .",
+    "electron-build": "electron-builder",
+    "build": "npm run react-build && npm run electron-build"
   },
   "eslintConfig": {
     "extends": [
@@ -48,6 +53,11 @@
   "devDependencies": {
     "concurrently": "^8.2.0",
     "electron": "^25.3.0",
-    "electron-is-dev": "^2.0.0"
+    "electron-builder": "^24.6.3"
+  },
+  "build": {
+    "appId": "com.enrollment.converter",
+    "productName": "VCU2TA2Converter",
+    "icon": "public/BNED-a60fd395.ico"
   }
 }

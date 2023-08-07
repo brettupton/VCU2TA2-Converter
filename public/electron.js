@@ -2,7 +2,7 @@ const path = require('path')
 const fs = require('fs')
 
 const { app, BrowserWindow, ipcMain, dialog } = require('electron')
-const isDev = require('electron-is-dev')
+const isDev = (process.env.APP_DEV?.trim() === "true")
 const csv = require('csv-parser')
 const XLSX = require('xlsx')
 const createCsvWriter = require('csv-writer').createObjectCsvWriter
@@ -11,8 +11,10 @@ let win
 
 const createWindow = () => {
     win = new BrowserWindow({
+        title: "VCU2TA2Converter",
         width: 800,
         height: 600,
+        icon: path.join(__dirname, "BNED-a60fd395.ico"),
         webPreferences: {
             nodeIntegration: true,
             contextIsolation: false,
@@ -23,9 +25,9 @@ const createWindow = () => {
     win.loadURL(
         isDev
             ? 'http://localhost:3000'
-            : `file://${path.join(__dirname, '../build/index.html')}`
+            : `file://${path.join(__dirname, 'index.html')}`
     )
-    // Open the DevTools.
+    // Open the DevTools if dev, remove Menu if not
     if (isDev) {
         win.webContents.openDevTools({ mode: 'detach' })
     }
@@ -52,7 +54,13 @@ const createWindow = () => {
     })
 
     ipcMain.on('createCSVFile', (event, data) => {
-        const filePath = path.join('resources', 'tmp', `${data.fileName}_Formatted.csv`)
+        const tempFilePath = path.join(app.getPath('appData'), 'tmp')
+        const filePath = path.join(tempFilePath, `${data.fileName}_Formatted.csv`)
+
+        // Check if directory exists, creates it if not
+        if (!fs.existsSync(tempFilePath)) {
+            fs.mkdirSync(tempFilePath, { recursive: true })
+        }
 
         const csvWriter = createCsvWriter({
             path: filePath,
@@ -86,9 +94,9 @@ const createWindow = () => {
                             }
                         });
                     }
-                }).catch(err => console.error(err))
+                }).catch(err => event.sender.send('CSV-error', err))
             })
-            .catch((error) => console.error('Error writing CSV file: ', error))
+            .catch((err) => event.sender.send('CSV-error', err))
     })
 }
 
