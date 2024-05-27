@@ -11,10 +11,10 @@ let win
 
 const createWindow = () => {
     win = new BrowserWindow({
-        title: "VCU2TA2Converter",
+        title: "Text Co-Op",
         width: 800,
         height: 600,
-        icon: path.join(__dirname, "BNED-a60fd395.ico"),
+        icon: path.join(__dirname, "feather.ico"),
         webPreferences: {
             nodeIntegration: true,
             contextIsolation: false,
@@ -28,9 +28,9 @@ const createWindow = () => {
             : `file://${path.join(__dirname, 'index.html')}`
     )
     // Open the DevTools if dev, remove Menu if not
-    if (isDev) {
-        win.webContents.openDevTools({ mode: 'detach' })
-    }
+    // if (isDev) {
+    //     win.webContents.openDevTools({ mode: 'detach' })
+    // }
 
     ipcMain.on('readCSV', (event, filePath) => {
         const rawCSV = []

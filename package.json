@@ -1,9 +1,9 @@
 {
-  "name": "vcu2ta2",
-  "version": "1.5.1",
+  "name": "owlguide",
+  "version": "2.0.5",
   "private": true,
   "main": "public/electron.js",
-  "description": "Convert VCU XLSX to TA2 CSV",
+  "description": "Assist with Textbook Management",
   "author": "Canari",
   "homepage": "./",
   "dependencies": {
@@ -56,8 +56,8 @@
     "electron-builder": "^24.6.3"
   },
   "build": {
-    "appId": "com.enrollment.converter",
-    "productName": "VCU2TA2Converter",
-    "icon": "public/BNED-a60fd395.ico"
+    "appId": "com.owl.guide",
+    "productName": "OwlGuide",
+    "icon": "public/feather.ico"
   }
 }
