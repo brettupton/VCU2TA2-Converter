@@ -15,14 +15,17 @@ fs.readFile('csvjson.json', 'utf8', (err, data) => {
 
     // Iterate through the input data to populate the transformed structure
     jsonData.forEach(entry => {
-        const isbn = String(entry.ISBN);
+        const isbn = entry.ISBN;
         const term = entry.Trm;
-        const courseInfo = `${entry.Dept} ${entry.Course} ${entry.Section.toString().padStart(3, '0')}`;
+        const courseInfo = `${entry.Dept} ${(entry.Course + "").padStart(3, "0")} ${(entry.Section + "").padStart(3, "0")}`;
 
         if (!transformedData[isbn]) {
             transformedData[isbn] = {
                 Title: entry.Title,
-                Semesters: {}
+                Semesters: {},
+                totalSales: 0, // Initialize total sales
+                totalEnrollment: 0, // Initialize total enrollment
+                averageSalesPerEnrollment: 0 // Initialize average
             };
         }
 
@@ -30,14 +33,22 @@ fs.readFile('csvjson.json', 'utf8', (err, data) => {
             transformedData[isbn].Semesters[term] = {
                 Courses: [],
                 Enrollment: 0,
-                Sales: 0
+                Sales: 0,
             };
+
+            // Update total sales and enrollment only once per term
+            transformedData[isbn].totalSales += entry.Sales;
+            transformedData[isbn].totalEnrollment += entry.Enrl;
         }
 
         transformedData[isbn].Semesters[term].Courses.push(courseInfo);
-        // Use the latest entry for enrollment and sales
         transformedData[isbn].Semesters[term].Enrollment = entry.Enrl;
         transformedData[isbn].Semesters[term].Sales = entry.Sales;
+
+        // Update the running average sales per enrollment for the ISBN
+        const totalSales = transformedData[isbn].totalSales;
+        const totalEnrollment = transformedData[isbn].totalEnrollment;
+        transformedData[isbn].averageSalesPerEnrollment = totalEnrollment ? (totalSales / totalEnrollment).toFixed(4) : (0).toFixed(4);
     });
 
     // Convert the transformed data to JSON string and write to a new JSON file

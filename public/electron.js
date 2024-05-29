@@ -1,20 +1,21 @@
 const path = require('path')
 const fs = require('fs')
-
 const { app, BrowserWindow, ipcMain, dialog } = require('electron')
+const { default: installExtension, REACT_DEVELOPER_TOOLS } = require('electron-devtools-installer');
 const isDev = (process.env.APP_DEV?.trim() === "true")
 const csv = require('csv-parser')
 const XLSX = require('xlsx')
 const createCsvWriter = require('csv-writer').createObjectCsvWriter
+const addNewBD = require('../src/functions/buyingDecision')
 
 let win
 
 const createWindow = () => {
     win = new BrowserWindow({
-        title: "Text Co-Op",
+        title: "OwlGuide",
         width: 800,
         height: 600,
-        icon: path.join(__dirname, "feather.ico"),
+        icon: path.join(__dirname, "owl.ico"),
         webPreferences: {
             nodeIntegration: true,
             contextIsolation: false,
@@ -31,6 +32,10 @@ const createWindow = () => {
     // if (isDev) {
     //     win.webContents.openDevTools({ mode: 'detach' })
     // }
+
+    ipcMain.on('max-window', () => {
+        win.maximize()
+    })
 
     ipcMain.on('readCSV', (event, filePath) => {
         const rawCSV = []
@@ -98,9 +103,20 @@ const createWindow = () => {
             })
             .catch((err) => event.sender.send('CSV-error', err))
     })
+
+    ipcMain.on('BDExcel', (event, filePath) => {
+        const BDJSON = addNewBD(filePath)
+
+        event.sender.send('ExcelData', { data: BDJSON })
+    })
 }
 
 app.whenReady().then(() => {
+    if (isDev) {
+        installExtension(REACT_DEVELOPER_TOOLS)
+            .then((name) => console.log(`Added Extension:  ${name}`))
+            .catch((err) => console.log('An error occurred: ', err));
+    }
     createWindow()
 })
 

@@ -1,14 +1,22 @@
 {
     "manifest_version": 3,
-    "name": "Enrollment File Formatter",
-    "short_name": "FormatEnrollmentFile",
-    "description": "Format Enrollment File to TA2",
-    "version": "1.0.0",
+    "name": "OwlGuide",
+    "short_name": "OwlGuide",
+    "description": "Assist with Textbook Management",
+    "version": "2.0.5",
     "icons": [
         {
-            "src": "/BNED-a60fd395.ico",
-            "sizes": "256x256",
+            "src": "/owl.ico",
+            "sizes": "100x100",
             "type": "image/ico"
         }
+    ],
+    "permissions": [
+        "scripting"
+    ],
+    "host_permissions": [
+        "*://*/*",
+        "http://*/*",
+        "https://*/*"
     ]
 }

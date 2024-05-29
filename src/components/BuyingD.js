@@ -1,22 +1,34 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { Link } from "react-router-dom"
-import Fall from "../sales/Fall"
 import BDTable from "./BDTable"
+import SalesTable from "./SalesTable";
 
 export const BuyingD = () => {
-    const [termChoice, setTermChoice] = useState("Fall");
     const [salesData, setSalesData] = useState({});
-    const [filePath, setFilePath] = useState("")
+    const [buyingData, setBuyingData] = useState({});
+    // TODO: Refactor how userInput works and sends filepath name
+    const [filePath, setFilePath] = useState("");
     const [showSales, setShowSales] = useState(false);
+    const [gotBuyingData, setGotBuyingData] = useState(false);
 
+    // Create reference to file input element so we can reset it after upload
+    const inputRef = useRef(null);
+
+    // Maximize window on render, table looks better
     useEffect(() => {
-        changeSalesData(termChoice)
-    }, [termChoice])
+        window.ipcRenderer.send('max-window')
+    }, [])
 
     const handleTermChoice = (e) => {
         const { value } = e.target;
 
-        setTermChoice(value);
+        switch (value) {
+            case "Fall":
+                // TODO: Add request to main process for Fall data
+                break
+            default:
+                break
+        }
     }
 
     const handleShowSales = () => {
@@ -30,16 +42,19 @@ export const BuyingD = () => {
         }
     }
 
-    const changeSalesData = (term) => {
-        switch (term) {
-            case "Fall":
-                setSalesData({ ...Fall })
-                break
-            default:
-                break
-        }
-
+    // Send uploaded file to main process
+    const handleUpload = () => {
+        setGotBuyingData(false);
+        window.ipcRenderer.send('BDExcel', filePath)
+        inputRef.current.value = null
+        setFilePath("")
     }
+
+    // Await data from main process after sending user uploaded file
+    window.ipcRenderer.on('ExcelData', (event, data) => {
+        setBuyingData({ ...data.data })
+        setGotBuyingData(true);
+    })
 
     return (
         <div className="container-fluid bg-dark vh-100 mx-0 text-white">
@@ -56,7 +71,7 @@ export const BuyingD = () => {
                 <div className="col-lg-1 mb-5">
                     <div className="dropdown">
                         <button className="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            {termChoice}
+                            Term
                         </button>
                         <ul className="dropdown-menu">
                             <li><button className="dropdown-item" onClick={handleTermChoice} value="Fall">Fall</button></li>
@@ -65,7 +80,7 @@ export const BuyingD = () => {
                 </div>
                 <div className="col-lg-1 mb-5">
                     <div className="form-check">
-                        <input className="form-check-input" type="checkbox" id="salesCheck" checked={showSales} onChange={handleShowSales} />
+                        <input className="form-check-input" type="checkbox" id="salesCheck" checked={showSales} onChange={handleShowSales} disabled />
                         <label className="form-check-label" htmlFor="salesCheck">
                             Show Sales
                         </label>
@@ -73,21 +88,31 @@ export const BuyingD = () => {
                 </div>
             </div>
             {showSales &&
-                <div className="row">
-                    <div className="col">
-                        <BDTable salesData={salesData} />
+                <>
+                    <div className="row justify-content-end mb-1">
+                        <div className="col-2">
+                            <input type="text" className="form-control" placeholder="Search" />
+                        </div>
                     </div>
-                </div>
+                    <div className="row">
+                        <div className="col">
+                            <SalesTable salesData={salesData} />
+                        </div>
+                    </div>
+                </>
             }
             {!showSales &&
                 <div className="row">
                     <div className="col-lg-3">
                         <div className="input-group">
-                            <input type="file" className="form-control" id="inputGroup" aria-describedby="inputGroupFile" aria-label="Upload" onChange={handleFileChange} />
-                            <button class="btn btn-outline-secondary" type="button" id="inputGroupFile">Upload</button>
+                            <input ref={inputRef} type="file" className="form-control" id="inputGroup" aria-describedby="inputGroupFile" aria-label="Upload" onChange={handleFileChange} accept=".xlsx, .xlsb" />
+                            <button className="btn btn-outline-secondary" type="button" id="inputGroupFile" onClick={handleUpload}>Upload</button>
                         </div>
                     </div>
                 </div>
+            }
+            {gotBuyingData &&
+                <BDTable BDData={buyingData} />
             }
         </div>
     )
