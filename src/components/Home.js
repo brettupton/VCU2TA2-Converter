@@ -1,8 +1,14 @@
 import { Footer } from "./Footer"
 import { Link } from "react-router-dom"
 import Owl from "../images/owl.png"
+import sound from "../images/johnlennon.mp3"
 
 export const Home = () => {
+    const audio = new Audio(sound)
+
+    const playAudio = () => {
+        audio.play()
+    }
 
     return (
         <>
@@ -24,8 +30,8 @@ export const Home = () => {
                     <Link to="/enrollment" className="btn btn-secondary" type="button">
                         Enrollment
                     </Link>
-                    <Link to="/" className="btn btn-secondary" type="button">
-                        Eliminate Raf
+                    <Link to="/" className="btn btn-secondary" type="button" onClick={playAudio}>
+                        Kill John Lennon
                     </Link>
                 </div>
             </div>

@@ -1,7 +1,6 @@
 const path = require('path')
 const fs = require('fs')
 const { app, BrowserWindow, ipcMain, dialog } = require('electron')
-const { default: installExtension, REACT_DEVELOPER_TOOLS } = require('electron-devtools-installer');
 const isDev = (process.env.APP_DEV?.trim() === "true")
 const csv = require('csv-parser')
 const XLSX = require('xlsx')
@@ -28,10 +27,10 @@ const createWindow = () => {
             ? 'http://localhost:3000'
             : `file://${path.join(__dirname, 'index.html')}`
     )
-    // Open the DevTools if dev, remove Menu if not
-    // if (isDev) {
-    //     win.webContents.openDevTools({ mode: 'detach' })
-    // }
+
+    if (isDev) {
+        win.webContents.openDevTools({ mode: 'detach' })
+    }
 
     ipcMain.on('max-window', () => {
         win.maximize()
@@ -113,6 +112,7 @@ const createWindow = () => {
 
 app.whenReady().then(() => {
     if (isDev) {
+        const { default: installExtension, REACT_DEVELOPER_TOOLS } = require('electron-devtools-installer');
         installExtension(REACT_DEVELOPER_TOOLS)
             .then((name) => console.log(`Added Extension:  ${name}`))
             .catch((err) => console.log('An error occurred: ', err));

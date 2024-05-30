@@ -1,6 +1,6 @@
 {
   "name": "owlguide",
-  "version": "2.1.5",
+  "version": "2.2.7",
   "private": true,
   "main": "public/electron.js",
   "description": "Assist with Textbook Management",
@@ -59,6 +59,15 @@
   "build": {
     "appId": "com.owl.guide",
     "productName": "OwlGuide",
-    "icon": "public/owl.ico"
+    "icon": "public/owl.ico",
+    "files": [
+      "src/"
+    ],
+    "extraResources": [
+      {
+        "from": "src/",
+        "to": "src/"
+      }
+    ]
   }
 }

@@ -7,9 +7,10 @@ import {
 } from "react-router-dom"
 import './index.css'
 import { Home } from './components/Home'
-import { FormatFile } from './components/FormatFile'
-import { MissingCRN } from './components/MissingCRN'
-import { BuyingD } from './components/BuyingD'
+import { FormatFile } from './components/enrollment/FormatFile'
+import { MissingCRN } from './components/enrollment/MissingCRN'
+import { BuyingD } from './components/decisions/BuyingD'
+import { NewBD } from './components/decisions/NewBD'
 
 const root = ReactDOM.createRoot(document.getElementById('root'))
 root.render(
@@ -19,7 +20,7 @@ root.render(
         <Route path="/" element={<Home />} />
         <Route path="/enrollment" element={<FormatFile />} />
         <Route path="/missing" element={<MissingCRN />} />
-        <Route path="/buying" element={<BuyingD />} />
+        <Route path="/buying" element={<NewBD />} />
       </Routes>
     </HashRouter>
   </React.StrictMode>
