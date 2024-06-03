@@ -23,14 +23,12 @@ const BDFromXLSB = (path) => {
 
         if (Store === 620) {
             if (!buyingDecision[ISBN]) {
-                // If ISBN entry doesn't exist, create a new entry
                 buyingDecision[ISBN] = {
                     Title,
                     Enrollment: Enr,
                     Decision: Decision
                 };
             } else {
-                // If ISBN entry exists, update the total enrollment and decision
                 buyingDecision[ISBN].Enrollment += Enr;
                 buyingDecision[ISBN].Decision += Decision;
             }
@@ -40,24 +38,24 @@ const BDFromXLSB = (path) => {
     return buyingDecision
 }
 
-const addNewBD = (path) => {
-    const prevBD = BDFromXLSB(path)
+const addNewBD = (currBD) => {
     const newBD = {}
 
-    for (const ISBN in prevBD) {
+    for (const ISBN in currBD) {
         const pastSales = Fall[ISBN]
-        const currBook = prevBD[ISBN]
+        const currBook = currBD[ISBN]
+        const newCalc = pastSales ? Math.ceil(currBook.Enrollment * pastSales.averageSalesPerEnrollment) : Math.ceil(currBook.Enrollment / 5)
 
         newBD[ISBN] = {
             Title: currBook.Title,
             Enrollment: currBook.Enrollment,
             Decision: currBook.Decision,
-            // Check if past sales exist
-            CalcBD: pastSales ? Math.ceil(currBook.Enrollment * pastSales.averageSalesPerEnrollment) : Math.ceil(currBook.Enrollment / 5)
+            CalcBD: newCalc,
+            Diff: Math.abs(currBook.Decision - newCalc)
         }
     }
 
-    return newBD
+    return { newBD, Fall }
 }
 
-module.exports = addNewBD
+module.exports = { BDFromXLSB, addNewBD }

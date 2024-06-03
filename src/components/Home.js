@@ -1,7 +1,7 @@
 import { Footer } from "./Footer"
 import { Link } from "react-router-dom"
-import Owl from "../images/owl.png"
-import sound from "../images/johnlennon.mp3"
+import Owl from "../media/owl.png"
+import sound from "../media/pizzapizza.wav"
 
 export const Home = () => {
     const audio = new Audio(sound)
@@ -13,7 +13,7 @@ export const Home = () => {
     return (
         <>
             <div className="container-fluid bg-dark vh-100 mx-0 text-white">
-                <div className="row text-center pt-2">
+                <div className="row text-center pt-4">
                     <div className="col">
                         <img src={Owl} alt="Owl Head" />
                     </div>
@@ -31,7 +31,7 @@ export const Home = () => {
                         Enrollment
                     </Link>
                     <Link to="/" className="btn btn-secondary" type="button" onClick={playAudio}>
-                        Kill John Lennon
+                        Summon Caesar
                     </Link>
                 </div>
             </div>

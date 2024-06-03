@@ -5,7 +5,17 @@ const isDev = (process.env.APP_DEV?.trim() === "true")
 const csv = require('csv-parser')
 const XLSX = require('xlsx')
 const createCsvWriter = require('csv-writer').createObjectCsvWriter
-const addNewBD = require('../src/functions/buyingDecision')
+const { BDFromXLSB, addNewBD } = require('../src/functions/buyingDecision')
+const readTXT = require('../src/functions/readTXT')
+const searchSales = require('../src/functions/searchSales')
+
+try {
+    require('electron-reloader')(module, {
+        ignore: ['node_modules', 'build']
+    });
+} catch (err) {
+    console.log('Error initializing electron-reloader:', err);
+}
 
 let win
 
@@ -35,6 +45,8 @@ const createWindow = () => {
     ipcMain.on('max-window', () => {
         win.maximize()
     })
+
+    // ** ENROLLMENT **
 
     ipcMain.on('readCSV', (event, filePath) => {
         const rawCSV = []
@@ -103,10 +115,39 @@ const createWindow = () => {
             .catch((err) => event.sender.send('CSV-error', err))
     })
 
+    // ** BUYING DECISION **
+
     ipcMain.on('BDExcel', (event, filePath) => {
         const BDJSON = addNewBD(filePath)
 
         event.sender.send('ExcelData', { data: BDJSON })
+    })
+
+    ipcMain.on('bd-file', (event, fileInfo) => {
+        const { path, extension } = fileInfo
+
+        switch (extension) {
+            case "txt":
+                readTXT(path)
+                    .then((txtBD) => {
+                        const { newBD, Fall } = addNewBD(txtBD)
+                        event.sender.send('bd-data', { BD: newBD, sales: Fall })
+                    })
+                break
+            case "xlsb":
+                const jsonBD = BDFromXLSB(path)
+                const { newBD, Fall } = addNewBD(jsonBD)
+                event.sender.send('bd-data', { BD: newBD, sales: Fall })
+                break
+            default:
+                break
+        }
+    })
+
+    ipcMain.on('search-sales', (event, { parameter, searchInfo }) => {
+        const result = searchSales(parameter, searchInfo)
+
+        event.sender.send('search-result', { result: result })
     })
 }
 

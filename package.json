@@ -11,7 +11,6 @@
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
     "bootstrap": "^5.3.0",
-    "cross-env": "^7.0.3",
     "csv-parser": "^3.0.0",
     "csv-writer": "^1.6.0",
     "react": "^18.2.0",
@@ -27,8 +26,8 @@
     "react-build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "dev": "concurrently -k \"cross-env BROWSER=none npm start\" \"npm:electron\"",
-    "electron": "ping localhost && set APP_DEV=true && electron .",
+    "electron": "wait-on http://192.168.1.177:3000 && cross-env APP_DEV=true nodemon --config nodemon.json",
+    "dev": "concurrently -k \"cross-env BROWSER=none npm start\" \"npm run electron\"",
     "electron-build": "electron-builder",
     "build": "npm run react-build && npm run electron-build"
   },
@@ -51,10 +50,14 @@
     ]
   },
   "devDependencies": {
-    "concurrently": "^8.2.0",
+    "concurrently": "^8.2.2",
+    "cross-env": "^7.0.3",
     "electron": "^25.3.0",
     "electron-builder": "^24.6.3",
-    "electron-devtools-installer": "^3.2.0"
+    "electron-devtools-installer": "^3.2.0",
+    "electron-reloader": "^1.2.3",
+    "nodemon": "^3.1.2",
+    "wait-on": "^7.2.0"
   },
   "build": {
     "appId": "com.owl.guide",
