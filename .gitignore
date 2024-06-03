@@ -10,6 +10,9 @@
 /build
 /dist
 
+# sales
+/src/sales
+
 # misc
 .DS_Store
 .env.local
