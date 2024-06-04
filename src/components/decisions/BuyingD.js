@@ -182,7 +182,7 @@ export const BuyingD = () => {
                         </div>
                         <div className="row mt-1">
                             <div className="col">
-                                <small>Format: ISBN, Title, Enrl, Sales</small>
+                                <small>Format: Title, ISBN, Enrl, Sales</small>
                             </div>
                         </div>
                         <div className="row mt-3">

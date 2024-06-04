@@ -10,6 +10,7 @@ import { Home } from './components/Home'
 import { FormatFile } from './components/enrollment/FormatFile'
 import { MissingCRN } from './components/enrollment/MissingCRN'
 import { BuyingD } from './components/decisions/BuyingD'
+import { NewEnroll } from './components/enrollment/NewEnroll'
 
 const root = ReactDOM.createRoot(document.getElementById('root'))
 root.render(
@@ -17,7 +18,7 @@ root.render(
     <HashRouter>
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/enrollment" element={<FormatFile />} />
+        <Route path="/enrollment" element={<NewEnroll />} />
         <Route path="/missing" element={<MissingCRN />} />
         <Route path="/buying" element={<BuyingD />} />
       </Routes>

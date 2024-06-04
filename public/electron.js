@@ -2,12 +2,12 @@ const path = require('path')
 const fs = require('fs')
 const { app, BrowserWindow, ipcMain, dialog } = require('electron')
 const isDev = (process.env.APP_DEV?.trim() === "true")
-const csv = require('csv-parser')
-const XLSX = require('xlsx')
 const createCsvWriter = require('csv-writer').createObjectCsvWriter
-const { BDFromXLSB, addNewBD } = require('../src/functions/buyingDecision')
-const readTXT = require('../src/functions/readTXT')
-const searchSales = require('../src/functions/searchSales')
+const readCSV = require('../src/functions/enrollment/csv')
+const { XLSXToCSVArr, matchXLSXToCSV } = require('../src/functions/enrollment/xlsx')
+const { BDFromXLSB, addNewBD } = require('../src/functions/decisions/buyingDecision')
+const readTXT = require('../src/functions/decisions/readTXT')
+const searchSales = require('../src/functions/decisions/searchSales')
 
 try {
     require('electron-reloader')(module, {
@@ -48,25 +48,54 @@ const createWindow = () => {
 
     // ** ENROLLMENT **
 
-    ipcMain.on('readCSV', (event, filePath) => {
-        const rawCSV = []
-        fs.createReadStream(filePath)
-            .pipe(csv({
-                headers: ['Unit', 'Term', 'Year', 'Subject', 'Course_Num', 'Offering_Num', 'Last_Name',
-                    'Max_Enr', 'Est_Enr', 'Act_Enr', 'Continuation', 'Evening', 'Extension', 'TN', 'Location', 'Title', 'CRN']
-            }))
-            .on('data', (data) => rawCSV.push(data))
-            .on('end', () => {
-                event.sender.send('csvData', rawCSV)
+    ipcMain.on('format-file-check', (event, enrollInfo) => {
+        const { term, year } = enrollInfo
+
+        const basePath = isDev ?
+            path.join(__dirname, '..', 'resources', 'formatted') :
+            path.join(app.getPath('appData'), 'formatted')
+        const formatPath = path.join(basePath, `${term}${year}`)
+
+        if (fs.existsSync(formatPath)) {
+            fs.readdir(formatPath, (err, files) => {
+                if (err) {
+                    console.error("Something went wrong with reading directory: ", err)
+                    return
+                }
+                event.sender.send('format-file-result', { fileExists: true, fileName: files[0] })
             })
+        } else {
+            event.sender.send('format-file-result', { fileExists: false, fileName: "" })
+        }
     })
 
-    ipcMain.on('readXLSX', (event, userInput) => {
-        const workbook = XLSX.readFile(userInput.XLSXFilePath)
-        const worksheet = workbook.Sheets[workbook.SheetNames[0]]
-        const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: '' })
+    ipcMain.on('first-upload', (event, enrollInfo) => {
+        console.log("recieved")
+        const { term, year, enrollFile } = enrollInfo
 
-        event.sender.send('XLSXData', { userInput: userInput, data: jsonData })
+        const basePath = isDev ?
+            path.join(__dirname, '..', 'resources', 'formatted') :
+            path.join(app.getPath('appData'), 'formatted')
+        const formatPath = path.join(basePath, `${term}${year}`)
+
+        const XLSXArr = XLSXToCSVArr(term, year, enrollFile.path)
+
+        if (fs.existsSync(formatPath)) {
+            fs.readdir(formatPath, (err, files) => {
+                if (err) {
+                    console.error(err)
+                    return
+                }
+                readCSV(path.join(formatPath, files[0]))
+                    .then((CSVArray) => {
+                        const matched = matchXLSXToCSV(XLSXArr, CSVArray)
+                        event.sender.send('matched', { matched: matched })
+                    })
+                    .catch(err =>
+                        console.error(err)
+                    )
+            })
+        }
     })
 
     ipcMain.on('createCSVFile', (event, data) => {
