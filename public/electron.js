@@ -25,6 +25,12 @@ const createWindow = () => {
         width: 800,
         height: 600,
         icon: path.join(__dirname, "owl.ico"),
+        titleBarStyle: 'hidden',
+        titleBarOverlay: {
+            color: '#2f3241',
+            symbolColor: '#fff',
+            height: 60
+        },
         webPreferences: {
             nodeIntegration: true,
             contextIsolation: false,

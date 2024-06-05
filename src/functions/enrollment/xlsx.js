@@ -46,6 +46,7 @@ const matchXLSXToCSV = (json, csv) => {
 
         if (course["Offering_Num"] === "000") {
             if (matchedCSV) {
+                console.log(matchedCSV["Offering_Num"])
                 course["Offering_Num"] = matchedCSV["Offering_Num"]
             }
         }

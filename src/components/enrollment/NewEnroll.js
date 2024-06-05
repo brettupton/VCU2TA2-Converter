@@ -1,4 +1,7 @@
 import { useState, useEffect } from "react"
+import { Link } from "react-router-dom"
+import { MatchTable } from "./MatchTable"
+import { EnrollForm } from "./EnrollForm"
 
 export const NewEnroll = () => {
     const [enrollInfo, setEnrollInfo] = useState({
@@ -100,93 +103,30 @@ export const NewEnroll = () => {
     })
 
 
+
+
+
     return (
         <div className="container-fluid bg-dark vh-100 mx-0 text-white">
-            <div className="row pt-5">
-                <div className="col">
-                    <div className="row">
-                        <div className="col">
-                            <input type="text" onChange={handleEnrollChange} id="term" placeholder="Term" />
-                        </div>
-                    </div>
-                    <div className="row">
-                        <div className="col">
-                            <small>Summer, Spring, or Fall</small>
-                        </div>
-                    </div>
-                </div>
-                <div className="col">
-                    <input type="text" onChange={handleEnrollChange} id="year" placeholder="Year" maxLength={2} />
+            <div className="row">
+                <div className="col mt-3 mb-3">
+                    <Link to="/" className="text-white">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" className="bi bi-arrow-left" viewBox="0 0 16 16">
+                            <path fillRule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8" />
+                        </svg>
+                    </Link>
                 </div>
             </div>
-            <div className="row pt-5">
-                <div className="col">
-                    <input type="file" onChange={handleFileChange} accept=".xlsx" />
-                </div>
-            </div>
-            {formatInfoGot ?
-                formatInfo.fileExists ?
-                    <div className="row mt-5">
-                        <div className="col">
-                            Previously Formatted File: {formatInfo["name"]}
-                        </div>
-                    </div>
-                    :
-                    <>
-                        <div className="row mt-5">
-                            <div className="col">
-                                Previously Formatted File not found for Term
-                            </div>
-                        </div>
-                        <div className="row mt-5">
-                            <div className="col">
-                                <input type="file" accept=".csv" />
-                            </div>
-                        </div>
-                    </>
+            {firstUploadGot ?
+                <MatchTable matchedArr={matchedArr} />
                 :
-                <div className="row">
-                    <div className="col">
-
-                    </div>
-                </div>
-            }
-            <div className="row mt-3">
-                <div className="col">
-                    <button className="btn btn-secondary" onClick={handleFirstUpload}>Submit</button>
-                </div>
-            </div>
-            {firstUploadGot &&
-                <div className="container-fluid">
-                    <div className="row">
-                        <div className="col mx-auto">
-                            <div className="table-responsive rounded"
-                                style={{ "height": "92vh" }}>
-                                <table className="table table-bordered table-dark">
-                                    <thead className="sticky-top top-0" style={{ "padding": 0 }}>
-                                        <tr className="align-middle" style={{ "border": 0 }}>
-                                            <th style={{ "border": 0 }}>CRN</th>
-                                            <th style={{ "border": 0 }}>Course</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {Object.keys(matchedArr).map((index, key) => {
-                                            if (matchedArr[index]["Offering_Num"] === "000")
-                                                return (
-                                                    <tr key={key}>
-                                                        <td>{matchedArr[index]["CRN"]}</td>
-                                                        <td>{`${matchedArr[index]["Subject"]} ${matchedArr[index]["Course_Num"]} ${matchedArr[index]["Offering_Num"]}`}</td>
-                                                    </tr>
-                                                )
-                                            return ("")
-                                        }
-                                        )}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <EnrollForm
+                    handleEnrollChange={handleEnrollChange}
+                    handleFileChange={handleFileChange}
+                    handleFirstUpload={handleFirstUpload}
+                    formatInfo={formatInfo}
+                    formatInfoGot={formatInfoGot}
+                />
             }
         </div>
     )
