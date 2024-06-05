@@ -17,6 +17,7 @@ export const NewEnroll = () => {
         name: "",
         fileExists: null
     })
+    const [newOfferingInfo, setNewOfferingInfo] = useState({})
     const [matchedArr, setMatchedArr] = useState([])
     const [formatInfoGot, setFormatInfoGot] = useState(false)
     const [firstUploadGot, setfirstUploadGot] = useState(false)
@@ -38,6 +39,14 @@ export const NewEnroll = () => {
     useEffect(() => {
         if (matchedArr.length > 0) {
             setfirstUploadGot(true)
+
+            for (const course of matchedArr) {
+                if (course["Offering_Num"] === "")
+                    setNewOfferingInfo(prev => ({
+                        ...prev,
+                        [course["CRN"]]: "000"
+                    }))
+            }
         }
     }, [matchedArr])
 
@@ -67,8 +76,23 @@ export const NewEnroll = () => {
     }
 
     // Send enrollment file to match with previous
-    const handleFirstUpload = () => {
-        window.ipcRenderer.send('first-upload', enrollInfo)
+    const handleFirstSubmit = () => {
+        window.ipcRenderer.send('first-submit', enrollInfo)
+    }
+
+    const handleOfferingChange = (e) => {
+        const { id, value } = e.currentTarget
+
+        setNewOfferingInfo(prev => ({
+            ...prev,
+            [id]: value
+        }))
+    }
+
+    //Send back enrollment file with user filled offerings
+    const handleSecondSubmit = () => {
+        window.ipcRenderer.send('second-submit', { enroll: matchedArr, offering: newOfferingInfo, fileName: enrollInfo["enrollFile"]["name"] })
+
     }
 
     window.ipcRenderer.on('format-file-result', (event, data) => {
@@ -102,10 +126,6 @@ export const NewEnroll = () => {
         )
     })
 
-
-
-
-
     return (
         <div className="container-fluid bg-dark vh-100 mx-0 text-white">
             <div className="row">
@@ -118,12 +138,14 @@ export const NewEnroll = () => {
                 </div>
             </div>
             {firstUploadGot ?
-                <MatchTable matchedArr={matchedArr} />
+                <MatchTable matchedArr={matchedArr}
+                    handleOfferingChange={handleOfferingChange}
+                    handleSecondSubmit={handleSecondSubmit} />
                 :
                 <EnrollForm
                     handleEnrollChange={handleEnrollChange}
                     handleFileChange={handleFileChange}
-                    handleFirstUpload={handleFirstUpload}
+                    handleFirstSubmit={handleFirstSubmit}
                     formatInfo={formatInfo}
                     formatInfoGot={formatInfoGot}
                 />

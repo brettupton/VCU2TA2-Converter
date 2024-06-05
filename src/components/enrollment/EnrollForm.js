@@ -1,4 +1,4 @@
-export const EnrollForm = ({ handleEnrollChange, handleFileChange, handleFirstUpload, formatInfo, formatInfoGot }) => {
+export const EnrollForm = ({ handleEnrollChange, handleFileChange, handleFirstSubmit, formatInfo, formatInfoGot }) => {
     return (
         <>
             <div className="row pt-1">
@@ -48,7 +48,7 @@ export const EnrollForm = ({ handleEnrollChange, handleFileChange, handleFirstUp
             }
             <div className="row mt-2 text-center">
                 <div className="col">
-                    <button className="btn btn-secondary" onClick={handleFirstUpload}>Upload</button>
+                    <button className="btn btn-secondary" onClick={handleFirstSubmit}>Submit</button>
                 </div>
             </div>
         </>
