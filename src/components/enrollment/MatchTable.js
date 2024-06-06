@@ -15,7 +15,7 @@ export const MatchTable = ({ matchedArr, handleOfferingChange, handleSecondSubmi
                             </thead>
                             <tbody>
                                 {Object.keys(matchedArr).map((index, key) => {
-                                    if (matchedArr[index]["Offering_Num"] === "")
+                                    if (matchedArr[index]["Offering_Num"] === "" || matchedArr[index]["Offering_Num"] === "000")
                                         return (
                                             <tr key={key}>
                                                 <td>{matchedArr[index]["CRN"]}</td>

@@ -9,7 +9,7 @@ const XLSXToCSVArr = (term, year, filePath) => {
     for (const course of jsonXLSX) {
         const newCourse = {
             "Unit": course["CAMPUS"] === "MPC" ? 1 : 2,
-            "Term": term === "Fall" ? term === "Spring" ? "F" : "W" : "A",
+            "Term": term === "Fall" ? "F" : term === "Spring" ? "W" : term === "Summer" ? "A" : "",
             "Year": year,
             "Subject": course["SUBJECT"],
             "Course_Num": course["COURSE NUMBER"].toString().padStart(3, "0"),
@@ -31,29 +31,4 @@ const XLSXToCSVArr = (term, year, filePath) => {
     return csvArray
 }
 
-const matchXLSXToCSV = (json, csv) => {
-    const matchedArr = []
-
-    const csvLookup = csv.reduce((acc, course) => {
-        acc[course["CRN"]] = course
-        return acc
-    }, {})
-
-
-    for (const course of json) {
-        const CRN = course["CRN"]
-        const matchedCSV = csvLookup[CRN]
-
-        if (course["Offering_Num"] === "000") {
-            if (matchedCSV) {
-                course["Offering_Num"] = matchedCSV["Offering_Num"]
-            }
-        }
-
-        matchedArr.push(course)
-    }
-
-    return matchedArr
-}
-
-module.exports = { XLSXToCSVArr, matchXLSXToCSV }
+module.exports = XLSXToCSVArr

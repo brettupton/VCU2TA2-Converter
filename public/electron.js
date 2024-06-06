@@ -54,18 +54,28 @@ const createWindow = () => {
         const basePath = isDev ?
             path.join(__dirname, '..', 'resources', 'formatted') :
             path.join(app.getPath('appData'), 'formatted')
-        const formatPath = path.join(basePath, `${term}${year}`)
+        const formatDir = path.join(basePath, `${term}${year}`)
 
-        if (fs.existsSync(formatPath)) {
-            fs.readdir(formatPath, (err, files) => {
+        if (fs.existsSync(formatDir)) {
+            fs.readdir(formatDir, (err, files) => {
                 if (err) {
                     console.error("Something went wrong with reading directory: ", err)
                     return
                 }
-                event.sender.send('format-file-result', { fileExists: true, fileName: files[0] })
+                if (files.length > 0) {
+                    event.sender.send('format-file-result', { fileExists: true, fileName: files[0] })
+                } else {
+                    event.sender.send('format-file-result', { fileExists: false, fileName: "" })
+                }
             })
         } else {
-            event.sender.send('format-file-result', { fileExists: false, fileName: "" })
+            fs.mkdir(formatDir, { recursive: true }, (err) => {
+                if (err) {
+                    console.error(err)
+                    return
+                }
+                event.sender.send('format-file-result', { fileExists: false, fileName: "" })
+            })
         }
     })
 
@@ -75,24 +85,39 @@ const createWindow = () => {
         const basePath = isDev ?
             path.join(__dirname, '..', 'resources', 'formatted') :
             path.join(app.getPath('appData'), 'formatted')
-        const formatPath = path.join(basePath, `${term}${year}`)
+        const formatDir = path.join(basePath, `${term}${year}`)
 
         const XLSXArr = XLSXToCSVArr(term, year, enrollFile.path)
 
-        if (fs.existsSync(formatPath)) {
-            fs.readdir(formatPath, (err, files) => {
+        if (fs.existsSync(formatDir)) {
+            fs.readdir(formatDir, (err, files) => {
                 if (err) {
                     console.error(err)
                     return
                 }
-                readCSV(path.join(formatPath, files[0]))
-                    .then((CSVArray) => {
-                        const matched = matchXLSXToCSV(XLSXArr, CSVArray)
-                        event.sender.send('matched', { matched: matched })
-                    })
-                    .catch(err =>
-                        console.error(err)
-                    )
+                if (files.length > 0) {
+                    if (enrollFile.formatFile.path === "") {
+                        readCSV(path.join(formatDir, files[0]))
+                            .then((CSVArray) => {
+                                const matched = matchXLSXToCSV(XLSXArr, CSVArray)
+                                event.sender.send('matched', { matched: matched })
+                            })
+                            .catch(err =>
+                                console.error(err)
+                            )
+                    } else {
+                        readCSV(enrollFile.formatFile.path)
+                            .then((CSVArray) => {
+                                const matched = matchXLSXToCSV(XLSXArr, CSVArray)
+                                event.sender.send('matched', { matched: matched })
+                            })
+                            .catch(err =>
+                                console.error(err)
+                            )
+                    }
+                } else {
+                    event.sender.send('matched', { matched: XLSXArr })
+                }
             })
         }
     })

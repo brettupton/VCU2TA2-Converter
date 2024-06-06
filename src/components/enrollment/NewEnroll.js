@@ -10,6 +10,9 @@ export const NewEnroll = () => {
         enrollFile: {
             path: "",
             name: ""
+        },
+        formatFile: {
+            path: ""
         }
     })
 
@@ -64,14 +67,24 @@ export const NewEnroll = () => {
 
         if (currentTarget.files) {
             const file = currentTarget.files[0]
+            const extension = file.name.split('.')[1]
 
-            setEnrollInfo(prev => ({
-                ...prev,
-                enrollFile: {
-                    path: file.path,
-                    name: file.name.split('.')[0]
-                }
-            }))
+            if (extension === "xlsx") {
+                setEnrollInfo(prev => ({
+                    ...prev,
+                    enrollFile: {
+                        path: file.path,
+                        name: file.name.split('.')[0]
+                    }
+                }))
+            } else if (extension === "csv") {
+                setEnrollInfo(prev => ({
+                    ...prev,
+                    formatFile: {
+                        path: file.path,
+                    }
+                }))
+            }
         }
     }
 

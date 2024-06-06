@@ -35,7 +35,7 @@ export const EnrollForm = ({ handleEnrollChange, handleFileChange, handleFirstSu
                         </div>
                         <div className="row mt-5">
                             <div className="col">
-                                <input type="file" accept=".csv" />
+                                <input type="file" onChange={handleFileChange} accept=".csv" />
                             </div>
                         </div>
                     </>
