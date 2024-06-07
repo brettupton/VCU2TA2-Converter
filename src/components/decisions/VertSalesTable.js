@@ -30,7 +30,7 @@ const VertSalesTable = ({ salesData, currBook }) => {
       </div>
       <div className="row mx-0 my-1">
         <div className="col mx-auto">
-          <div style={{ maxHeight: "46vh", overflowY: "auto" }}>
+          <div style={{ maxHeight: "42vh", overflowY: "auto" }}>
             <div className="table-responsive">
               <table className="table table-striped table-hover">
                 <thead className="sticky-top">
@@ -68,7 +68,7 @@ const VertSalesTable = ({ salesData, currBook }) => {
       {/* TODO: Click on Term and show full course list */}
       <div className="row mx-0">
         <div className="col mx-auto">
-          <div style={{ maxHeight: "36vh", overflowY: "auto" }}>
+          <div style={{ maxHeight: "35vh", overflowY: "auto" }}>
             <div className="table-responsive">
               <table className="table table-striped table-hover">
                 <thead className="sticky-top">

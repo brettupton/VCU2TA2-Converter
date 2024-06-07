@@ -156,7 +156,7 @@ export const BuyingD = () => {
                 searchGot ?
                     <>
                         <div className="row">
-                            <div className="col-lg-3 col-sm-8">
+                            <div className="col-lg-4 col-sm-8">
                                 <div className="input-group">
                                     <input type="text" className="form-control" id="inputGroupText" aria-describedby="inputGroupText" aria-label="Search" placeholder="ISBN Search"
                                         onChange={handleISBNSearchChange} maxLength={20} />
@@ -173,7 +173,7 @@ export const BuyingD = () => {
                     :
                     <>
                         <div className="row">
-                            <div className="col-lg-3 col-sm-8">
+                            <div className="col-lg-4 col-sm-8">
                                 <div className="input-group">
                                     <input type="file" className="form-control" id="inputGroupFile" aria-describedby="inputGroupFile" aria-label="Upload" onChange={handleFileChange} />
                                     <button className="btn btn-outline-secondary" type="button" id="inputGroupFile" onClick={handleFileUpload}>Submit</button>

@@ -1,6 +1,6 @@
 {
   "name": "owlguide",
-  "version": "2.2.7",
+  "version": "2.3.1",
   "private": true,
   "main": "public/electron.js",
   "description": "Assist with Textbook Management",

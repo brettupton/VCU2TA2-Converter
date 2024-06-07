@@ -30,6 +30,9 @@ export const Home = () => {
                     <Link to="/enrollment" className="btn btn-secondary" type="button">
                         Enrollment
                     </Link>
+                    <Link to="/adoptions" className="btn btn-secondary" type="button">
+                        Adoptions
+                    </Link>
                     <Link to="/" className="btn btn-secondary" type="button" onClick={playAudio}>
                         Summon Caesar
                     </Link>

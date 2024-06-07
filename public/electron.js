@@ -8,6 +8,8 @@ const { BDFromXLSB, addNewBD } = require('../src/functions/decisions/buyingDecis
 const readTXT = require('../src/functions/decisions/readTXT')
 const searchSales = require('../src/functions/decisions/searchSales')
 const { matchUserOfferings, matchXLSXToCSV } = require('../src/functions/enrollment/match')
+const CSV = require('../src/classes/CSV')
+const unsubmittedAdoptions = require('../src/functions/adoptions/unsubmittedAdoptions')
 
 try {
     require('electron-reloader')(module, {
@@ -18,6 +20,8 @@ try {
 }
 
 let win
+
+const csv = new CSV()
 
 const createWindow = () => {
     win = new BrowserWindow({
@@ -187,6 +191,16 @@ const createWindow = () => {
         const result = searchSales(parameter, searchInfo)
 
         event.sender.send('search-result', { result: result })
+    })
+
+    // ** ADOPTIONS ** 
+    ipcMain.on('adoption-upload', (event, adoptionFile) => {
+        csv.readCSV(adoptionFile.path, "Adoptions")
+            .then((result) => {
+                const notSubmitted = unsubmittedAdoptions(result)
+
+                event.sender.send('unsubmitted', { unsubmitted: notSubmitted })
+            })
     })
 }
 

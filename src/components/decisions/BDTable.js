@@ -6,8 +6,8 @@ const BDTable = ({ BDData, sortAlpha, handleISBNClick }) => {
                 <div className="col mx-auto">
                     <div className="table-responsive rounded"
                         style={{ "height": "92vh" }}>
-                        <table className="table table-bordered table-dark">
-                            <thead className="sticky-top top-0" style={{ "padding": 0 }}>
+                        <table className="table table-bordered">
+                            <thead className="sticky-top top-0 table-dark" style={{ "padding": 0 }}>
                                 <tr className="align-middle" style={{ "border": 0 }}>
                                     <th style={{ "border": 0 }}>ISBN</th>
                                     <th style={{ "border": 0 }}>
