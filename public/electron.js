@@ -3,11 +3,11 @@ const fs = require('fs')
 const { app, BrowserWindow, ipcMain, dialog } = require('electron')
 const isDev = (process.env.APP_DEV?.trim() === "true")
 const { readCSV, createCSV } = require('../src/functions/enrollment/csv')
-const { XLSXToCSVArr, matchXLSXToCSV } = require('../src/functions/enrollment/xlsx')
+const XLSXToCSVArr = require('../src/functions/enrollment/xlsx')
 const { BDFromXLSB, addNewBD } = require('../src/functions/decisions/buyingDecision')
 const readTXT = require('../src/functions/decisions/readTXT')
 const searchSales = require('../src/functions/decisions/searchSales')
-const matchUserOfferings = require('../src/functions/enrollment/match')
+const { matchUserOfferings, matchXLSXToCSV } = require('../src/functions/enrollment/match')
 
 try {
     require('electron-reloader')(module, {
@@ -22,8 +22,8 @@ let win
 const createWindow = () => {
     win = new BrowserWindow({
         title: "OwlGuide",
-        width: 800,
-        height: 600,
+        width: 830,
+        height: 630,
         icon: path.join(__dirname, "owl.ico"),
         webPreferences: {
             nodeIntegration: true,
@@ -80,7 +80,7 @@ const createWindow = () => {
     })
 
     ipcMain.on('first-submit', (event, enrollInfo) => {
-        const { term, year, enrollFile } = enrollInfo
+        const { term, year, enrollFile, formatFile } = enrollInfo
 
         const basePath = isDev ?
             path.join(__dirname, '..', 'resources', 'formatted') :
@@ -96,17 +96,19 @@ const createWindow = () => {
                     return
                 }
                 if (files.length > 0) {
-                    if (enrollFile.formatFile.path === "") {
-                        readCSV(path.join(formatDir, files[0]))
-                            .then((CSVArray) => {
-                                const matched = matchXLSXToCSV(XLSXArr, CSVArray)
-                                event.sender.send('matched', { matched: matched })
-                            })
-                            .catch(err =>
-                                console.error(err)
-                            )
+                    readCSV(path.join(formatDir, files[0]))
+                        .then((CSVArray) => {
+                            const matched = matchXLSXToCSV(XLSXArr, CSVArray)
+                            event.sender.send('matched', { matched: matched })
+                        })
+                        .catch(err =>
+                            console.error(err)
+                        )
+                } else {
+                    if (formatFile.path === "") {
+                        event.sender.send('matched', { matched: XLSXArr })
                     } else {
-                        readCSV(enrollFile.formatFile.path)
+                        readCSV(formatFile.path)
                             .then((CSVArray) => {
                                 const matched = matchXLSXToCSV(XLSXArr, CSVArray)
                                 event.sender.send('matched', { matched: matched })
@@ -115,8 +117,6 @@ const createWindow = () => {
                                 console.error(err)
                             )
                     }
-                } else {
-                    event.sender.send('matched', { matched: XLSXArr })
                 }
             })
         }
@@ -125,7 +125,8 @@ const createWindow = () => {
     ipcMain.on('second-submit', (event, data) => {
         const { enroll, offering, fileName } = data
 
-        const term = enroll[0]["Term"] === "F" ? enroll[0]["Term"] === "W" ? "Fall" : "Spring" : "Summer"
+        console.log(enroll[0]["Term"])
+        const term = enroll[0]["Term"]
         const year = enroll[0]["Year"]
 
         const basePath = isDev ?
@@ -145,6 +146,7 @@ const createWindow = () => {
                         if (!saveResult.cancelled && saveResult.filePath) {
                             fs.copyFile(path.join(formatDir, `${fileName}_Formatted.csv`), saveResult.filePath, (err) => {
                                 if (err) { console.error(err) }
+                                event.sender.send('download-success')
                             })
                         } else {
                             fs.unlink(path.join(app.getPath('downloads'), `${data.fileName}_Formatted.csv`), (err) => {

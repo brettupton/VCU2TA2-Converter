@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react"
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import { MatchTable } from "./MatchTable"
 import { EnrollForm } from "./EnrollForm"
 
-export const NewEnroll = () => {
+export const EnrollHome = () => {
     const [enrollInfo, setEnrollInfo] = useState({
         term: "",
         year: 0,
@@ -12,7 +12,8 @@ export const NewEnroll = () => {
             name: ""
         },
         formatFile: {
-            path: ""
+            path: "",
+            name: ""
         }
     })
 
@@ -22,26 +23,27 @@ export const NewEnroll = () => {
     })
     const [newOfferingInfo, setNewOfferingInfo] = useState({})
     const [matchedArr, setMatchedArr] = useState([])
-    const [formatInfoGot, setFormatInfoGot] = useState(false)
-    const [firstUploadGot, setfirstUploadGot] = useState(false)
+    const [firstSubmitGot, setfirstSubmitGot] = useState(false)
+    const [formFilled, setFormFilled] = useState(false)
+    const [formatFilled, setFormatFilled] = useState(false)
+
+    const navigate = useNavigate()
 
     useEffect(() => {
-        setFormatInfoGot(false)
-        if (["Fall", "Spring", "Summer"].includes(enrollInfo["term"]) &&
+        if (["F", "W", "A"].includes(enrollInfo["term"]) &&
             ["24", "25", "26"].includes(enrollInfo["year"])) {
             window.ipcRenderer.send('format-file-check', enrollInfo)
         }
+
+        setFormFilled(isFormFilled(enrollInfo))
+        setFormatFilled(enrollInfo["formatFile"]["path"] !== "")
+        console.log(enrollInfo["formatFile"]["path"])
+
     }, [enrollInfo])
 
     useEffect(() => {
-        if (formatInfo.fileExists !== null) {
-            setFormatInfoGot(true)
-        }
-    }, [formatInfo])
-
-    useEffect(() => {
         if (matchedArr.length > 0) {
-            setfirstUploadGot(true)
+            setfirstSubmitGot(true)
 
             for (const course of matchedArr) {
                 if (course["Offering_Num"] === "")
@@ -63,28 +65,18 @@ export const NewEnroll = () => {
     }
 
     const handleFileChange = (e) => {
-        const { currentTarget } = e
+        const { files, id } = e.currentTarget
 
-        if (currentTarget.files) {
-            const file = currentTarget.files[0]
-            const extension = file.name.split('.')[1]
+        if (files) {
+            const file = files[0]
 
-            if (extension === "xlsx") {
-                setEnrollInfo(prev => ({
-                    ...prev,
-                    enrollFile: {
-                        path: file.path,
-                        name: file.name.split('.')[0]
-                    }
-                }))
-            } else if (extension === "csv") {
-                setEnrollInfo(prev => ({
-                    ...prev,
-                    formatFile: {
-                        path: file.path,
-                    }
-                }))
-            }
+            setEnrollInfo(prev => ({
+                ...prev,
+                [id]: {
+                    path: file.path,
+                    name: file.name.split('.')[0]
+                }
+            }))
         }
     }
 
@@ -106,6 +98,18 @@ export const NewEnroll = () => {
     const handleSecondSubmit = () => {
         window.ipcRenderer.send('second-submit', { enroll: matchedArr, offering: newOfferingInfo, fileName: enrollInfo["enrollFile"]["name"] })
 
+    }
+
+    const nonEmpty = (value) => {
+        if (typeof value === 'string') return value.trim() !== ''
+        if (typeof value === 'number') return value !== 0
+        if (typeof value === 'object' && value !== null) return isFormFilled(value)
+        return false
+    }
+
+    const isFormFilled = (obj) => {
+        const { formatFile, ...rest } = obj
+        return Object.values(rest).every(nonEmpty)
     }
 
     window.ipcRenderer.on('format-file-result', (event, data) => {
@@ -139,18 +143,30 @@ export const NewEnroll = () => {
         )
     })
 
+    window.ipcRenderer.on('download-success', (event) => {
+        navigate(0)
+    })
+
     return (
         <div className="container-fluid bg-dark vh-100 mx-0 text-white">
             <div className="row">
                 <div className="col mt-3 mb-3">
-                    <Link to="/" className="text-white">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" className="bi bi-arrow-left" viewBox="0 0 16 16">
-                            <path fillRule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8" />
-                        </svg>
-                    </Link>
+                    {firstSubmitGot ?
+                        <Link className="text-white" onClick={() => window.location.reload()}>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" className="bi bi-arrow-left" viewBox="0 0 16 16">
+                                <path fillRule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8" />
+                            </svg>
+                        </Link>
+                        :
+                        <Link to="/" className="text-white">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" className="bi bi-arrow-left" viewBox="0 0 16 16">
+                                <path fillRule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8" />
+                            </svg>
+                        </Link>
+                    }
                 </div>
             </div>
-            {firstUploadGot ?
+            {firstSubmitGot ?
                 <MatchTable matchedArr={matchedArr}
                     handleOfferingChange={handleOfferingChange}
                     handleSecondSubmit={handleSecondSubmit} />
@@ -160,7 +176,8 @@ export const NewEnroll = () => {
                     handleFileChange={handleFileChange}
                     handleFirstSubmit={handleFirstSubmit}
                     formatInfo={formatInfo}
-                    formatInfoGot={formatInfoGot}
+                    formFilled={formFilled}
+                    formatFilled={formatFilled}
                 />
             }
         </div>

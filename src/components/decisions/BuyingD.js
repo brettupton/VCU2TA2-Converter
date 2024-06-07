@@ -78,7 +78,7 @@ export const BuyingD = () => {
     const handleISBNSearch = () => {
         setSearchGot(false)
         setBDGot(false)
-        if (/^[\d\-]+$/.test(searchISBN)) {
+        if (/^[\d-]+$/.test(searchISBN)) {
             window.ipcRenderer.send('search-sales', { parameter: "ISBN", searchInfo: { ISBN: searchISBN, Title: "" } })
         } else {
             console.log("Not an ISBN")

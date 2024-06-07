@@ -1,56 +1,51 @@
-export const EnrollForm = ({ handleEnrollChange, handleFileChange, handleFirstSubmit, formatInfo, formatInfoGot }) => {
+export const EnrollForm = ({ handleEnrollChange, handleFileChange, handleFirstSubmit, formatInfo, formFilled, formatFilled }) => {
     return (
-        <>
-            <div className="row pt-1">
-                <div className="col">
-                    <select className="form-select form-select-sm" id="term" defaultValue={""} onChange={handleEnrollChange}>
-                        <option value="">Term</option>
-                        <option value="Fall">Fall</option>
-                        <option value="Spring">Spring</option>
-                        <option value="Summer">Summer</option>
-                    </select>
-                    <div className="row pt-5">
-                        <div className="col">
-                            <input type="file" onChange={handleFileChange} accept=".xlsx" />
-                        </div>
-                    </div>
+        <div className="container m-0">
+            <div className="row mt-3">
+                <div className="col-2">
+                    <input type="text" className="form-control" onChange={handleEnrollChange} id="term" placeholder="Term" maxLength={1} />
                 </div>
-                <div className="col">
-                    <input type="text" onChange={handleEnrollChange} id="year" placeholder="Year" maxLength={2} />
+                <div className="col-2">
+                    <input type="text" className="form-control" onChange={handleEnrollChange} id="year" placeholder="Year" maxLength={2} />
                 </div>
             </div>
-            {formatInfoGot ?
-                formatInfo.fileExists ?
-                    <div className="row mt-5">
-                        <div className="col">
-                            Latest Formatted File: {formatInfo["name"]}
-                        </div>
-                    </div>
-                    :
-                    <>
-                        <div className="row mt-5">
-                            <div className="col">
-                                Latest Formatted File Unavailable
-                            </div>
-                        </div>
-                        <div className="row mt-5">
-                            <div className="col">
-                                <input type="file" onChange={handleFileChange} accept=".csv" />
-                            </div>
-                        </div>
-                    </>
-                :
-                <div className="row mt-5">
+            <div className="row mt-4">
+                <div className="col-5">
+                    <input type="file" className="form-control" onChange={handleFileChange} id="enrollFile" accept=".xlsx" />
+                    <label htmlFor="enrollFile" className="form-label"><small>Enrollment File</small></label>
+                </div>
+            </div>
+            {formatInfo.fileExists &&
+                <div className="row mt-4">
                     <div className="col">
-
+                        Latest Formatted File: {formatInfo.name}
                     </div>
                 </div>
             }
-            <div className="row mt-2 text-center">
-                <div className="col">
-                    <button className="btn btn-secondary" onClick={handleFirstSubmit}>Submit</button>
+            {formatInfo.fileExists === false &&
+                <>
+                    {!formatFilled &&
+                        <div className="row mt-4">
+                            <div className="col">
+                                <p className="text-danger m-0"><small>No Format File Found for Term Specified</small></p>
+                            </div>
+                        </div>
+                    }
+                    <div className="row mt-2">
+                        <div className="col-5">
+                            <input type="file" className="form-control" onChange={handleFileChange} id="formatFile" accept=".csv" />
+                            <label htmlFor="formatFile" className="form-label"><small>Format File</small></label>
+                        </div>
+                    </div>
+                </>
+            }
+            {formFilled &&
+                <div className="row mt-3">
+                    <div className="col">
+                        <button className="btn btn-secondary" onClick={handleFirstSubmit}>Submit</button>
+                    </div>
                 </div>
-            </div>
-        </>
+            }
+        </div>
     )
 }

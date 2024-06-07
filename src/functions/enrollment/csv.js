@@ -36,9 +36,11 @@ const createCSV = (file, data) => {
                     if (err) {
                         reject(err)
                     }
-                    fs.unlink(path.join(file.dir, files[0]), (err) => {
-                        if (err) { reject(err) }
-                    })
+                    if (files.length > 1) {
+                        fs.unlink(path.join(file.dir, files[0]), (err) => {
+                            if (err) { reject(err) }
+                        })
+                    }
                 })
                 resolve()
             })
