@@ -9,7 +9,7 @@ const readTXT = require('../src/functions/decisions/readTXT')
 const searchSales = require('../src/functions/decisions/searchSales')
 const { matchUserOfferings, matchXLSXToCSV } = require('../src/functions/enrollment/match')
 const CSV = require('../src/classes/CSV')
-const unsubmittedAdoptions = require('../src/functions/adoptions/unsubmittedAdoptions')
+const matchPrevAdoptions = require('../src/functions/adoptions/match')
 
 try {
     require('electron-reloader')(module, {
@@ -42,9 +42,9 @@ const createWindow = () => {
             : `file://${path.join(__dirname, 'index.html')}`
     )
 
-    if (isDev) {
-        win.webContents.openDevTools({ mode: 'detach' })
-    }
+    // if (isDev) {
+    //     win.webContents.openDevTools({ mode: 'detach' })
+    // }
 
     ipcMain.on('max-window', () => {
         win.maximize()
@@ -196,10 +196,10 @@ const createWindow = () => {
     // ** ADOPTIONS ** 
     ipcMain.on('adoption-upload', (event, adoptionFile) => {
         csv.readCSV(adoptionFile.path, "Adoptions")
-            .then((result) => {
-                const notSubmitted = unsubmittedAdoptions(result)
+            .then(([result, term]) => {
+                const prevAdoptions = matchPrevAdoptions(result, term)
 
-                event.sender.send('unsubmitted', { unsubmitted: notSubmitted })
+                event.sender.send('unsubmitted', { unsubmitted: prevAdoptions, term: term })
             })
     })
 }

@@ -11,7 +11,8 @@
 /dist
 
 #directories
-/src/sales
+/src/Ωsales
+/src/Ωcourses
 
 # misc
 .DS_Store

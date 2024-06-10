@@ -1,12 +1,14 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
+import { UnsubTable } from "./UnsubTable"
 
 export const AdoptionHome = () => {
     const [adoptionFile, setAdoptionFile] = useState({
         name: "",
         path: ""
     })
-    const [unsubAdoptions, setUnsubAdoptions] = useState({})
+    const [matchedAdoptions, setMatchedAdoptions] = useState({})
+    const [adoptionSelection, setAdoptionSelection] = useState("all")
 
     const handleFileChange = (e) => {
         const { files } = e.currentTarget
@@ -21,12 +23,24 @@ export const AdoptionHome = () => {
         }
     }
 
+    const handleAdoptionChange = (e) => {
+        const { value } = e.currentTarget
+
+        setAdoptionSelection(value)
+    }
+
+    useEffect(() => {
+        if (Object.keys(matchedAdoptions).length > 0) {
+            window.ipcRenderer.send('max-window')
+        }
+    }, [matchedAdoptions])
+
     const handleFileUpload = () => {
         window.ipcRenderer.send('adoption-upload', adoptionFile)
     }
 
     window.ipcRenderer.on('unsubmitted', (event, data) => {
-        setUnsubAdoptions(data.unsubmitted)
+        setMatchedAdoptions(data.unsubmitted)
     })
 
     return (
@@ -40,14 +54,22 @@ export const AdoptionHome = () => {
                     </Link>
                 </div>
             </div>
-            <div className="row mt-3">
-                <div className="col-lg-4 col-sm-8">
-                    <div className="input-group">
-                        <input type="file" className="form-control" id="inputGroupFile" aria-describedby="inputGroupFile" aria-label="Upload" onChange={handleFileChange} />
-                        <button className="btn btn-outline-secondary" type="button" id="inputGroupFile" onClick={handleFileUpload}>Submit</button>
+            {Object.keys(matchedAdoptions).length > 0 ?
+                <UnsubTable
+                    matchedAdoptions={matchedAdoptions}
+                    adoptionSelection={adoptionSelection}
+                    handleAdoptionChange={handleAdoptionChange}
+                />
+                :
+                <div className="row mt-3">
+                    <div className="col-lg-4 col-sm-8">
+                        <div className="input-group">
+                            <input type="file" className="form-control" id="inputGroupFile" aria-describedby="inputGroupFile" aria-label="Upload" onChange={handleFileChange} />
+                            <button className="btn btn-outline-secondary" type="button" id="inputGroupFile" onClick={handleFileUpload}>Submit</button>
+                        </div>
                     </div>
                 </div>
-            </div>
+            }
         </div>
     )
 }

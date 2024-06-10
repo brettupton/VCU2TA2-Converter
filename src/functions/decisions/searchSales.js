@@ -1,4 +1,4 @@
-const Fall = require("../../sales/Fall")
+const Fall = require("../../Ωsales/Fall")
 const { convertISBN10to13 } = require("./convertISBN")
 
 const searchSales = (parameter, searchInfo) => {

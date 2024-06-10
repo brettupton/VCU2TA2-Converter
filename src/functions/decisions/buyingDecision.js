@@ -1,5 +1,5 @@
 const XLSX = require('xlsx')
-const Fall = require('../../sales/Fall')
+const Fall = require('../../Ωsales/Fall')
 
 const BDFromXLSB = (path) => {
     const workbook = XLSX.readFile(path)

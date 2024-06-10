@@ -1,5 +1,4 @@
 const fs = require('fs');
-const convertISBN13to10 = require('./convertISBN');
 
 fs.readFile('csvjson.json', 'utf8', (err, data) => {
     if (err) {
