@@ -15,6 +15,7 @@ export const BuyingD = () => {
         ISBN: "9780385474542",
         Title: "THINGS FALL APART"
     })
+    const [term, setTerm] = useState("F")
     const [searchISBN, setSearchISBN] = useState("")
     const [searchResult, setSearchResult] = useState({})
     const [enrollment, setEnrollment] = useState(0)
@@ -81,7 +82,7 @@ export const BuyingD = () => {
         if (/^[\d-]+$/.test(searchISBN)) {
             window.ipcRenderer.send('search-sales', { parameter: "ISBN", searchInfo: { ISBN: searchISBN, Title: "" } })
         } else {
-            console.log("Not an ISBN")
+            window.ipcRenderer.send('error', { text: "Enter either ISBN-10 or ISBN-13" })
         }
     }
 
@@ -107,6 +108,7 @@ export const BuyingD = () => {
     window.ipcRenderer.on('bd-data', (event, data) => {
         setNewBD({ ...data.BD })
         setSalesData({ ...data.sales })
+        setTerm(data.term)
     })
 
     window.ipcRenderer.on('search-result', (event, data) => {
@@ -139,16 +141,7 @@ export const BuyingD = () => {
                             <BDTable BDData={newBD} sortAlpha={sortAlpha} handleISBNClick={handleISBNClick} />
                         </div>
                         <div className="col-4">
-                            <div className="row">
-                                <div className="col-lg-6 col-sm-8">
-                                    <div className="input-group">
-                                        <input type="text" className="form-control" id="inputGroupText" aria-describedby="inputGroupText" aria-label="Search" placeholder="ISBN Search"
-                                            onChange={handleISBNSearchChange} maxLength={20} />
-                                        <button className="btn btn-outline-secondary" type="button" id="inputGroupText" onClick={handleISBNSearch}>Search</button>
-                                    </div>
-                                </div>
-                            </div>
-                            <VertSalesTable salesData={salesData} currBook={currBook} />
+                            <VertSalesTable salesData={salesData} currBook={currBook} term={term} handleEnrollmentChange={handleEnrollmentChange} enrollment={enrollment} />
                         </div>
                     </div>
                 </>
@@ -175,7 +168,7 @@ export const BuyingD = () => {
                         <div className="row">
                             <div className="col-lg-4 col-sm-8">
                                 <div className="input-group">
-                                    <input type="file" className="form-control" id="inputGroupFile" aria-describedby="inputGroupFile" aria-label="Upload" onChange={handleFileChange} />
+                                    <input type="file" className="form-control" id="inputGroupFile" aria-describedby="inputGroupFile" aria-label="Upload" onChange={handleFileChange} accept=".txt, .xlsb" />
                                     <button className="btn btn-outline-secondary" type="button" id="inputGroupFile" onClick={handleFileUpload}>Submit</button>
                                 </div>
                             </div>

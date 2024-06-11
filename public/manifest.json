@@ -3,7 +3,7 @@
     "name": "OwlGuide",
     "short_name": "OwlGuide",
     "description": "Assist with Textbook Management",
-    "version": "2.0.5",
+    "version": "2.3.9",
     "icons": [
         {
             "src": "/owl.ico",

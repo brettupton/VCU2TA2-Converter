@@ -1,5 +1,5 @@
 const Fall = require("../../Ωsales/Fall")
-const { convertISBN10to13 } = require("./convertISBN")
+const { convertISBN10to13 } = require("../convertISBN")
 
 const searchSales = (parameter, searchInfo) => {
     // TODO: Results array to have multiple results based on title search
@@ -32,6 +32,7 @@ const searchSales = (parameter, searchInfo) => {
             "averageSalesPerEnrollment": 0
         }
     }
+    // TODO: User change term
     Object.keys(Fall).forEach(isbn => {
         const currBook = Fall[isbn];
 

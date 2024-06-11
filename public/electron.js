@@ -23,7 +23,7 @@ let win
 
 const csv = new CSV()
 
-const createWindow = () => {
+const createWindow = async () => {
     win = new BrowserWindow({
         title: "OwlGuide",
         width: 830,
@@ -42,12 +42,22 @@ const createWindow = () => {
             : `file://${path.join(__dirname, 'index.html')}`
     )
 
-    // if (isDev) {
-    //     win.webContents.openDevTools({ mode: 'detach' })
-    // }
+    // Dynamically import electron-context-menu
+    try {
+        const contextMenu = await import('electron-context-menu')
+        contextMenu.default({
+            window: win
+        })
+    } catch (error) {
+        console.error('Error loading electron-context-menu:', error)
+    }
 
     ipcMain.on('max-window', () => {
         win.maximize()
+    })
+
+    ipcMain.on('error', (event, data) => {
+        dialog.showErrorBox("Error", data.text)
     })
 
     // ** ENROLLMENT **
@@ -172,15 +182,15 @@ const createWindow = () => {
         switch (extension) {
             case "txt":
                 readTXT(path)
-                    .then((txtBD) => {
-                        const { newBD, Fall } = addNewBD(txtBD)
-                        event.sender.send('bd-data', { BD: newBD, sales: Fall })
+                    .then(([term, txtBD]) => {
+                        const [newBD, Sales] = addNewBD(term, txtBD)
+                        event.sender.send('bd-data', { BD: newBD, sales: Sales, term: term })
                     })
                 break
             case "xlsb":
                 const jsonBD = BDFromXLSB(path)
-                const { newBD, Fall } = addNewBD(jsonBD)
-                event.sender.send('bd-data', { BD: newBD, sales: Fall })
+                const [newBD, Sales] = addNewBD(jsonBD)
+                event.sender.send('bd-data', { BD: newBD, sales: Sales })
                 break
             default:
                 break
@@ -194,6 +204,7 @@ const createWindow = () => {
     })
 
     // ** ADOPTIONS ** 
+
     ipcMain.on('adoption-upload', (event, adoptionFile) => {
         csv.readCSV(adoptionFile.path, "Adoptions")
             .then(([result, term]) => {

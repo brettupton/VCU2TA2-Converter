@@ -1,5 +1,6 @@
 import { Fragment } from "react"
 import { MatchRow } from "./MatchRow"
+import { MatchRowNoText } from "./MatchRowNoText"
 
 export const UnsubTable = ({ matchedAdoptions, adoptionSelection, handleAdoptionChange }) => {
     const keysArr = Object.keys(matchedAdoptions)
@@ -29,8 +30,8 @@ export const UnsubTable = ({ matchedAdoptions, adoptionSelection, handleAdoption
                 <div className="col mx-auto">
                     <div className="table-responsive rounded"
                         style={{ height: "85vh", overflowY: 'auto' }}>
-                        <table className="table table-bordered table-dark p-0">
-                            <thead className="sticky-top p-0">
+                        <table className="table table-bordered table-dark table-striped table-hover p-0">
+                            <thead className="sticky-top p-0 table-light">
                                 <tr className="align-middle" style={{ "border": 0 }}>
                                     <th className="border-0">Course</th>
                                     <th className="border-0">Title</th>
@@ -42,7 +43,12 @@ export const UnsubTable = ({ matchedAdoptions, adoptionSelection, handleAdoption
                                 </tr>
                             </thead>
                             <tbody>
-                                <MatchRow matchedAdoptions={matchedAdoptions} />
+                                {adoptionSelection === 'all' &&
+                                    <MatchRow matchedAdoptions={matchedAdoptions} />
+                                }
+                                {adoptionSelection === 'ntr' &&
+                                    <MatchRowNoText matchedAdoptions={matchedAdoptions} />
+                                }
                             </tbody>
                         </table>
                     </div>

@@ -10,6 +10,8 @@ const readTXT = (filePath) => {
 
             const lines = data.split('\n');
 
+            const term = findTerm(lines)
+
             // Find the indices of all instances of "Page: 1"
             const pageIndices = [];
             for (let i = 0; i < lines.length; i++) {
@@ -58,10 +60,29 @@ const readTXT = (filePath) => {
             delete joinedData['ISBN              E']
             delete joinedData['None']
 
-            resolve(joinedData)
+            resolve([term, joinedData])
         })
 
     })
+}
+
+const findTerm = (lines) => {
+    const headerLine = 'Record  Store  Term'
+    const headerIndex = lines.findIndex(line => line.includes(headerLine))
+
+    if (headerIndex === -1) {
+        console.error('Header line not found')
+        return;
+    }
+
+    // Move one line down below header
+    const firstLineIndex = headerIndex + 1;
+
+    const firstLine = lines[firstLineIndex]
+    const term = firstLine[18]
+
+    return term
+
 }
 
 

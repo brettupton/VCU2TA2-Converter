@@ -61,14 +61,21 @@ export const AdoptionHome = () => {
                     handleAdoptionChange={handleAdoptionChange}
                 />
                 :
-                <div className="row mt-3">
-                    <div className="col-lg-4 col-sm-8">
-                        <div className="input-group">
-                            <input type="file" className="form-control" id="inputGroupFile" aria-describedby="inputGroupFile" aria-label="Upload" onChange={handleFileChange} />
-                            <button className="btn btn-outline-secondary" type="button" id="inputGroupFile" onClick={handleFileUpload}>Submit</button>
+                <>
+                    <div className="row mt-3">
+                        <div className="col-lg-4 col-sm-8">
+                            <div className="input-group">
+                                <input type="file" className="form-control" id="inputGroupFile" aria-describedby="inputGroupFile" aria-label="Upload" onChange={handleFileChange} accept=".csv" />
+                                <button className="btn btn-outline-secondary" type="button" id="inputGroupFile" onClick={handleFileUpload}>Submit</button>
+                            </div>
                         </div>
                     </div>
-                </div>
+                    <div className="row mt-1">
+                        <div className="col">
+                            <small>Course Submission Status</small>
+                        </div>
+                    </div>
+                </>
             }
         </div>
     )

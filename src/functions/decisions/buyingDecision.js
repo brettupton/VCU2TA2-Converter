@@ -1,5 +1,6 @@
 const XLSX = require('xlsx')
 const Fall = require('../../Ωsales/Fall')
+const Summer = require('../../Ωsales/Summer.json')
 
 const BDFromXLSB = (path) => {
     const workbook = XLSX.readFile(path)
@@ -38,24 +39,48 @@ const BDFromXLSB = (path) => {
     return buyingDecision
 }
 
-const addNewBD = (currBD) => {
+const addNewBD = (term, currBD) => {
     const newBD = {}
 
-    for (const ISBN in currBD) {
-        const pastSales = Fall[ISBN]
-        const currBook = currBD[ISBN]
-        const newCalc = pastSales ? Math.ceil(currBook.Enrollment * pastSales.averageSalesPerEnrollment) : Math.ceil(currBook.Enrollment / 5)
+    switch (term) {
+        case "A":
+            for (const ISBN in currBD) {
+                const pastSales = Summer[ISBN]
+                const currBook = currBD[ISBN]
+                // Always order at least one copy per book for Summer
+                const newCalc = Math.max(1, pastSales ? Math.ceil(currBook.Enrollment * pastSales.averageSalesPerEnrollment) : Math.ceil(currBook.Enrollment / 5))
 
-        newBD[ISBN] = {
-            Title: currBook.Title,
-            Enrollment: currBook.Enrollment,
-            Decision: currBook.Decision,
-            CalcBD: newCalc,
-            Diff: Math.abs(currBook.Decision - newCalc)
-        }
+                newBD[ISBN] = {
+                    Title: currBook.Title,
+                    Enrollment: currBook.Enrollment,
+                    Decision: currBook.Decision,
+                    CalcBD: newCalc,
+                    Diff: Math.abs(currBook.Decision - newCalc)
+                }
+            }
+
+            return [newBD, Summer]
+
+        case "F":
+            for (const ISBN in currBD) {
+                const pastSales = Fall[ISBN]
+                const currBook = currBD[ISBN]
+                const newCalc = pastSales ? Math.ceil(currBook.Enrollment * pastSales.averageSalesPerEnrollment) : Math.ceil(currBook.Enrollment / 5)
+
+                newBD[ISBN] = {
+                    Title: currBook.Title,
+                    Enrollment: currBook.Enrollment,
+                    Decision: currBook.Decision,
+                    CalcBD: newCalc,
+                    Diff: Math.abs(currBook.Decision - newCalc)
+                }
+            }
+
+            return [newBD, Fall]
+
+        default:
+            break
     }
-
-    return { newBD, Fall }
 }
 
-module.exports = { BDFromXLSB, addNewBD }
+module.exports = { BDFromXLSB, addNewBD } 

@@ -1,7 +1,6 @@
 const HoriSalesTable = ({ searchResult, handleEnrollmentChange, enrollment }) => {
     const years = [15, 16, 17, 18, 19, 20, 21, 22, 23]
 
-
     const ISBN = Object.keys(searchResult)[0]
     const searchBook = searchResult[ISBN]
 
@@ -19,6 +18,7 @@ const HoriSalesTable = ({ searchResult, handleEnrollmentChange, enrollment }) =>
     const averageEnrollment = count > 0 ? (searchBook.totalEnrollment / count).toFixed(0) : 0;
     const averageSales = count > 0 ? (searchBook.totalSales / count).toFixed(0) : 0;
     const averageSE = searchBook.averageSalesPerEnrollment ? (searchBook.averageSalesPerEnrollment) : 0
+    const ISBNBD = searchBook?.averageSalesPerEnrollment ? Math.ceil(enrollment * searchBook.averageSalesPerEnrollment) : Math.ceil(enrollment / 5)
 
     return (
         <div className="container-fluid p-0">
@@ -39,20 +39,10 @@ const HoriSalesTable = ({ searchResult, handleEnrollmentChange, enrollment }) =>
                         <input type="text" className="form-control" aria-label="Enrollment" aria-describedby="enrollment" onChange={handleEnrollmentChange} />
                     </div>
                 </div>
-                <div className="col-lg-1 col-sm-4">
-                    <div className="bg-light text-black text-center border border-5 border-primary p-2" style={{ "--bs-border-opacity": ".5" }}>
-                        <div>
-                            Decision
-                        </div>
-                        <ul className="list-group list-group-flush">
-                            {enrollment > 0 ?
-                                <li className="list-group-item">{searchBook.averageSalesPerEnrollment ? Math.ceil(enrollment * searchBook.averageSalesPerEnrollment) : Math.ceil(enrollment / 5)}</li>
-                                :
-                                <p class="placeholder-glow">
-                                    <span class="placeholder col-12"></span>
-                                </p>
-                            }
-                        </ul>
+                <div className="col-lg-2 col-sm-6">
+                    <div className="input-group mt-3">
+                        <span className="input-group-text" id="Decision">Decision</span>
+                        <input type="text" className="form-control" value={ISBNBD} aria-label="Decision" aria-describedby="Decision" maxLength={5} disabled />
                     </div>
                 </div>
             </div>
