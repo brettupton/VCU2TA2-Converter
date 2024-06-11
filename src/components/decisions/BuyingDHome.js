@@ -4,7 +4,7 @@ import BDTable from "./BDTable"
 import VertSalesTable from "./VertSalesTable"
 import HoriSalesTable from "./HoriSalesTable"
 
-export const BuyingD = () => {
+export const BuyingDHome = () => {
     const [fileInfo, setFileInfo] = useState({
         path: "",
         extension: ""
@@ -118,7 +118,7 @@ export const BuyingD = () => {
     return (
         <div className="container-fluid bg-dark vh-100 mx-0 text-white">
             <div className="row">
-                <div className="col mt-3 mb-3">
+                <div className="col mt-3 mb-1">
                     {BDGot || searchGot ?
                         <Link className="text-white" onClick={() => window.location.reload()}>
                             <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" className="bi bi-arrow-left" viewBox="0 0 16 16">

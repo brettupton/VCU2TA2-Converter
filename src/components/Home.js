@@ -2,13 +2,23 @@ import { Footer } from "./Footer"
 import { Link } from "react-router-dom"
 import Owl from "../media/owl.png"
 import sound from "../media/pizzapizza.wav"
+import { useEffect, useState } from "react"
 
 export const Home = () => {
-    const audio = new Audio(sound)
+    const [isDev, setIsDev] = useState(false)
 
+    useEffect(() => {
+        window.ipcRenderer.send('dev-check')
+    }, [])
+
+    const audio = new Audio(sound)
     const playAudio = () => {
         audio.play()
     }
+
+    window.ipcRenderer.on('is-dev', (event, data) => {
+        setIsDev(data.isDev)
+    })
 
     return (
         <>
@@ -36,6 +46,11 @@ export const Home = () => {
                     <Link to="/" className="btn btn-secondary" type="button" onClick={playAudio}>
                         Summon Caesar
                     </Link>
+                    {isDev &&
+                        <Link to="/dev" className="btn btn-secondary" type="button">
+                            Dev
+                        </Link>
+                    }
                 </div>
             </div>
             <Footer />

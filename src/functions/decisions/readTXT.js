@@ -12,6 +12,8 @@ const readTXT = (filePath) => {
 
             const term = findTerm(lines)
 
+            // TODO: Keep track of departments, don't need SPEC or CANC
+
             // Find the indices of all instances of "Page: 1"
             const pageIndices = [];
             for (let i = 0; i < lines.length; i++) {
@@ -25,8 +27,9 @@ const readTXT = (filePath) => {
 
             const realData = lines.slice(thirdPageOne + 1);
 
-            // Filter lines that contain date, time, "Act", "Est", "End"
-            const pattern = /\d{1,2}\/\d{1,2}\/\d{2}|\d{2}:\d{2}:\d{2}|Act|Est|End/
+            // TODO: Maybe just delete both the dash line and header line right above it instead of filtering both
+            // Filter lines that contain date, time, "Act", "Est", "End", "Total"
+            const pattern = /\d{1,2}\/\d{1,2}\/\d{2}|\d{2}:\d{2}:\d{2}|Act|Est|End|Total/
             const noPattern = realData.filter(line => !pattern.test(line));
             // Filter lines that do not consist entirely of dashes
             // TODO: Figure out regex pattern of dashes

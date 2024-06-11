@@ -42,7 +42,6 @@ const createWindow = async () => {
             : `file://${path.join(__dirname, 'index.html')}`
     )
 
-    // Dynamically import electron-context-menu
     try {
         const contextMenu = await import('electron-context-menu')
         contextMenu.default({
@@ -212,6 +211,11 @@ const createWindow = async () => {
 
                 event.sender.send('unsubmitted', { unsubmitted: prevAdoptions, term: term })
             })
+    })
+
+    // ** DEV **
+    ipcMain.on('dev-check', (event) => {
+        event.sender.send('is-dev', { isDev })
     })
 }
 
