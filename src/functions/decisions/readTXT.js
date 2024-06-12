@@ -12,7 +12,7 @@ const readTXT = (filePath) => {
 
             const term = findTerm(lines)
 
-            // TODO: Keep track of departments, don't need SPEC or CANC
+            // TODO: Keep track of departments, don't need SPEC
 
             // Find the indices of all instances of "Page: 1"
             const pageIndices = [];
@@ -85,7 +85,6 @@ const findTerm = (lines) => {
     const term = firstLine[18]
 
     return term
-
 }
 
 

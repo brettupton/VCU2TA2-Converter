@@ -1,5 +1,7 @@
 const fs = require('fs')
+const path = require('path')
 const csv = require('csv-parser')
+const createCsvWriter = require('csv-writer').createObjectCsvWriter
 
 class CSV {
     readCSV = (filePath, CSVType = "Enrollment") => {
@@ -73,7 +75,33 @@ class CSV {
             default:
                 break
         }
+    }
 
+    createCSV = (file, data) => {
+        const newFile = path.join(file.dir, `${file.name}_Formatted.csv`);
+
+        return new Promise((resolve, reject) => {
+            const csvWriter = createCsvWriter({
+                path: newFile,
+                header: Object.keys(data[0])
+            });
+
+            csvWriter.writeRecords(data)
+                .then(() => {
+                    fs.readdir(file.dir, (err, files) => {
+                        if (err) {
+                            reject(err)
+                        }
+                        if (files.length > 1) {
+                            fs.unlink(path.join(file.dir, files[0]), (err) => {
+                                if (err) { reject(err) }
+                            })
+                        }
+                    })
+                    resolve()
+                })
+                .catch((err) => reject(err))
+        });
     }
 }
 

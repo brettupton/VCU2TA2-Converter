@@ -2,13 +2,13 @@ const path = require('path')
 const fs = require('fs')
 const { app, BrowserWindow, ipcMain, dialog } = require('electron')
 const isDev = (process.env.APP_DEV?.trim() === "true")
-const { readCSV, createCSV } = require('../src/functions/enrollment/csv')
 const XLSXToCSVArr = require('../src/functions/enrollment/xlsx')
 const { BDFromXLSB, addNewBD } = require('../src/functions/decisions/buyingDecision')
 const readTXT = require('../src/functions/decisions/readTXT')
 const searchSales = require('../src/functions/decisions/searchSales')
 const { matchUserOfferings, matchXLSXToCSV } = require('../src/functions/enrollment/match')
 const CSV = require('../src/classes/CSV')
+const TXT = require('../src/classes/TXT')
 const matchPrevAdoptions = require('../src/functions/adoptions/match')
 
 try {
@@ -22,6 +22,7 @@ try {
 let win
 
 const csv = new CSV()
+const txt = new TXT()
 
 const createWindow = async () => {
     win = new BrowserWindow({
@@ -109,7 +110,7 @@ const createWindow = async () => {
                     return
                 }
                 if (files.length > 0) {
-                    readCSV(path.join(formatDir, files[0]))
+                    csv.readCSV(path.join(formatDir, files[0]), "Enrollment")
                         .then((CSVArray) => {
                             const matched = matchXLSXToCSV(XLSXArr, CSVArray)
                             event.sender.send('matched', { matched: matched })
@@ -121,7 +122,7 @@ const createWindow = async () => {
                     if (formatFile.path === "") {
                         event.sender.send('matched', { matched: XLSXArr })
                     } else {
-                        readCSV(formatFile.path)
+                        csv.readCSV(formatFile.path, "Enrollment")
                             .then((CSVArray) => {
                                 const matched = matchXLSXToCSV(XLSXArr, CSVArray)
                                 event.sender.send('matched', { matched: matched })
@@ -138,7 +139,6 @@ const createWindow = async () => {
     ipcMain.on('second-submit', (event, data) => {
         const { enroll, offering, fileName } = data
 
-        console.log(enroll[0]["Term"])
         const term = enroll[0]["Term"]
         const year = enroll[0]["Year"]
 
@@ -149,7 +149,7 @@ const createWindow = async () => {
 
         const fullEnroll = matchUserOfferings(enroll, offering)
 
-        createCSV({ name: fileName, dir: formatDir }, fullEnroll)
+        csv.createCSV({ name: fileName, dir: formatDir }, fullEnroll)
             .then(() => {
                 dialog.showSaveDialog({
                     defaultPath: path.join(app.getPath('downloads'), `${data.fileName}_Formatted.csv`),
@@ -216,6 +216,27 @@ const createWindow = async () => {
     // ** DEV **
     ipcMain.on('dev-check', (event) => {
         event.sender.send('is-dev', { isDev })
+    })
+
+    ipcMain.on('new-sales', (event, data) => {
+        const basePath = path.join(__dirname, '../src/Ωsales')
+        const termPath = path.join(basePath + `/${data.term}.json`)
+
+        txt.readAllSales(data.path)
+            .then((sales) => {
+                fs.writeFile(termPath, JSON.stringify(sales, null, 4), 'utf8', err => {
+                    if (err) {
+                        console.error(err)
+                        return
+                    }
+                    dialog.showMessageBox(win,
+                        {
+                            type: "info",
+                            title: "OwlGuide",
+                            message: "Upload Successful"
+                        })
+                })
+            })
     })
 }
 
