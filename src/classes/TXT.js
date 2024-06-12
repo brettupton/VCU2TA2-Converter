@@ -31,11 +31,11 @@ class TXT {
                 for (let i = 0; i < salesData.length; i++) {
                     if ((/^-+$/).test(salesData[i].trim())) {
                         header = salesData[i - 1]
-                        const patternStartIndex = Math.max(0, i - 5);
-                        const patternEndIndex = i + 1;
+                        const patternStartIndex = Math.max(0, i - 5)
+                        const patternEndIndex = i + 1
                         salesData.splice(patternStartIndex, patternEndIndex - patternStartIndex);
                         // Adjust the loop index to continue checking after the removed section
-                        i = patternStartIndex - 1;
+                        i = patternStartIndex - 1
                     }
                 }
 
@@ -51,6 +51,7 @@ class TXT {
 
                 const allSales = {}
 
+                // Loop through and consolidate data per ISBN
                 salesData.forEach((line) => {
                     const Term = line.substring(headerIndices[0], headerIndices[1]).trim()
                     const Course = line.substring(headerIndices[1], headerIndices[2]).trim()
@@ -80,18 +81,20 @@ class TXT {
                         }
                     }
 
+                    // Count sections only and keep track of dept/course
                     const existingCourseIndex = allSales[ISBN][Term].Courses.findIndex(course => course.Course === Course)
                     if (existingCourseIndex === -1) {
-                        allSales[ISBN][Term].Courses.push({ Course: Course.trim(), Count: 1 })
+                        allSales[ISBN][Term].Courses.push({ Course: Course.trim(), Sections: 1 })
                     } else {
-                        allSales[ISBN][Term].Courses[existingCourseIndex].Count++
+                        allSales[ISBN][Term].Courses[existingCourseIndex].Sections++
                     }
 
+                    // Add to totalSales and totalEnrl only on first ISBN
                     if (allSales[ISBN][Term].Enrl === null && allSales[ISBN][Term].Sales === null) {
-                        allSales[ISBN].totalSales += Sales;
-                        allSales[ISBN].totalEnrl += Enrl;
-                        allSales[ISBN][Term].Enrl = Enrl;
-                        allSales[ISBN][Term].Sales = Sales;
+                        allSales[ISBN].totalSales += Sales
+                        allSales[ISBN].totalEnrl += Enrl
+                        allSales[ISBN][Term].Enrl = Enrl
+                        allSales[ISBN][Term].Sales = Sales
                     }
 
                     allSales[ISBN].avgSE = allSales[ISBN].totalEnrl > 0 ? (allSales[ISBN].totalSales / allSales[ISBN].totalEnrl).toFixed(4) : 0

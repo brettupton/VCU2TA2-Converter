@@ -219,8 +219,18 @@ const createWindow = async () => {
     })
 
     ipcMain.on('new-sales', (event, data) => {
-        const basePath = path.join(__dirname, '../src/Ωsales')
-        const termPath = path.join(basePath + `/${data.term}.json`)
+        const basePath = path.join(__dirname, '../src')
+        const storePath = path.join(basePath, 'stores', `${data.store}`)
+        const termPath = path.join(storePath, 'Ωsales', `${data.term}.json`)
+
+        if (!fs.existsSync(storePath)) {
+            fs.mkdir(path.join(storePath, 'Ωsales'), { recursive: true }, (err) => {
+                if (err) {
+                    console.error(err)
+                    return
+                }
+            })
+        }
 
         txt.readAllSales(data.path)
             .then((sales) => {
@@ -233,7 +243,7 @@ const createWindow = async () => {
                         {
                             type: "info",
                             title: "OwlGuide",
-                            message: "Upload Successful"
+                            message: `Upload for store ${data.store} successful`
                         })
                 })
             })

@@ -12,6 +12,7 @@ import { EnrollHome } from './components/enrollment/EnrollHome'
 import { AdoptionHome } from './components/adoptions/AdoptionHome'
 import { DevHome } from './components/dev/DevHome'
 
+
 const root = ReactDOM.createRoot(document.getElementById('root'))
 root.render(
   <React.StrictMode>

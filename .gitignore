@@ -13,6 +13,7 @@
 #directories
 /src/Ωsales
 /src/Ωcourses
+/src/stores
 
 # misc
 .DS_Store

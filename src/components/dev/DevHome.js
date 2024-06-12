@@ -3,6 +3,7 @@ import { Link } from "react-router-dom"
 
 export const DevHome = () => {
     const [filePath, setFilePath] = useState("")
+    const [store, setStore] = useState(0)
     const [term, setTerm] = useState("")
 
     const handleFileChange = (e) => {
@@ -13,13 +14,18 @@ export const DevHome = () => {
         }
     }
 
+    const handleStoreChange = (e) => {
+        const { value } = e.currentTarget
+        setStore(value)
+    }
+
     const handleTermChange = (e) => {
         const { value } = e.currentTarget
         setTerm(value)
     }
 
     const handleFileSubmit = () => {
-        window.ipcRenderer.send('new-sales', { path: filePath, term: term })
+        window.ipcRenderer.send('new-sales', { path: filePath, store: store, term: term })
     }
 
     return (
@@ -36,6 +42,9 @@ export const DevHome = () => {
             <div className="row mt-3">
                 <div className="col-2">
                     <input type="text" className="form-control" onChange={handleTermChange} placeholder="Term" maxLength={1} />
+                </div>
+                <div className="col-2">
+                    <input type="number" className="form-control" onChange={handleStoreChange} placeholder="Store" />
                 </div>
             </div>
             <div className="row mt-2">
