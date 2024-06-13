@@ -1,30 +1,36 @@
+import { useEffect, useState, useContext } from "react"
 import { Footer } from "./Footer"
 import { Link } from "react-router-dom"
+import { StoreContext } from "../index"
 import Owl from "../media/owl.png"
 import sound from "../media/pizzapizza.wav"
-import { useEffect, useState } from "react"
 
 export const Home = () => {
     const [isDev, setIsDev] = useState(false)
-    const [store, setStore] = useState(0)
+    const { store, handleStoreChange } = useContext(StoreContext)
 
     useEffect(() => {
         window.ipcRenderer.send('dev-check')
+        window.ipcRenderer.send('store-check')
     }, [])
+
+    useEffect(() => {
+        if (store > 0) {
+            window.ipcRenderer.send('store-change', { store: store })
+        }
+    }, [store])
 
     const audio = new Audio(sound)
     const playAudio = () => {
         audio.play()
     }
 
-    const handleStoreChange = (e) => {
-        const { value } = e.currentTarget
-
-        setStore(value)
-    }
-
     window.ipcRenderer.on('is-dev', (event, data) => {
         setIsDev(data.isDev)
+    })
+
+    window.ipcRenderer.on('store-found', (event, data) => {
+        handleStoreChange(data.store)
     })
 
     return (
@@ -45,8 +51,8 @@ export const Home = () => {
                         Store
                     </button>
                     <ul className="dropdown-menu text-center">
-                        <li onClick={handleStoreChange} value={620}><button className="border-0 bg-white">620 - VCU</button></li>
-                        <li onClick={handleStoreChange} value={622}><button className="border-0 bg-white">622 - MCV</button></li>
+                        <li onClick={() => handleStoreChange(620)}><button className="border-0 bg-white">620 - VCU</button></li>
+                        <li onClick={() => handleStoreChange(622)}><button className="border-0 bg-white">622 - MCV</button></li>
                     </ul>
                 </div>
             }
@@ -58,7 +64,7 @@ export const Home = () => {
                                 <Link to="/buying" type="button" className="btn btn-secondary mb-3">Buying Decision</Link>
                                 <Link to="/enrollment" type="button" className="btn btn-secondary mb-3">Enrollment</Link>
                                 <Link to="/adoptions" type="button" className="btn btn-secondary mb-3">Adoptions</Link>
-                                <Link to="/" type="button" className="btn btn-secondary mb-3">Summon Decision</Link>
+                                <button to="/" type="button" className="btn btn-secondary mb-3" onClick={playAudio}>Summon Caesar</button>
                                 {isDev &&
                                     <Link to="/dev" type="button" className="btn btn-secondary mb-3">Dev</Link>
                                 }

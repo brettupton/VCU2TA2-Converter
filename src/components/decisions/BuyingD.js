@@ -1,6 +1,18 @@
+import { useContext, useState } from "react"
 import { Link } from "react-router-dom"
+import { StoreContext } from "../.."
 
 export const BuyingD = () => {
+    const [term, setTerm] = useState("")
+
+    const { store } = useContext(StoreContext)
+
+    const handleTermChange = (e) => {
+        const { value } = e.currentTarget
+
+        setTerm(value)
+    }
+
     return (
         <div className="container-fluid bg-dark vh-100 mx-0 text-white">
             <div className="row">
@@ -15,7 +27,7 @@ export const BuyingD = () => {
             <div className="row">
                 <div className="col-2">
                     <div className="input-group">
-                        <input type="text" className="form-control" id="inputGroupText" aria-describedby="inputGroupText" aria-label="Term" placeholder="Term"
+                        <input type="text" className="form-control" onChange={handleTermChange} id="inputGroupText" aria-describedby="inputGroupText" aria-label="Term" placeholder="Term"
                             maxLength={1} />
                         <button className="btn btn-outline-secondary" type="button" id="inputGroupText">Run</button>
                     </div>

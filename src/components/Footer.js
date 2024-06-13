@@ -9,8 +9,8 @@ export const Footer = ({ store, handleStoreChange }) => {
                                 {store}
                             </button>
                             <ul className="dropdown-menu text-center">
-                                <li onClick={handleStoreChange} value={620}><button className="border-0 bg-white">620 - VCU</button></li>
-                                <li onClick={handleStoreChange} value={622}><button className="border-0 bg-white">622 - MCV</button></li>
+                                <li onClick={() => handleStoreChange(620)}><button className="border-0 bg-white">620 - VCU</button></li>
+                                <li onClick={() => handleStoreChange(622)}><button className="border-0 bg-white">622 - MCV</button></li>
                             </ul>
                         </div>
                     </div>

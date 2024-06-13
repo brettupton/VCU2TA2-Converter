@@ -60,6 +60,15 @@ const createWindow = async () => {
         dialog.showErrorBox("Error", data.text)
     })
 
+    ipcMain.on('store-check', (event) => {
+        if (global.store) {
+            event.sender.send('store-found', { store: global.store })
+        }
+    })
+
+    ipcMain.on('store-change', (event, data) => {
+        global.store = data.store
+    })
     // ** ENROLLMENT **
 
     ipcMain.on('format-file-check', (event, enrollInfo) => {
