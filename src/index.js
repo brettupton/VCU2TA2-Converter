@@ -8,7 +8,6 @@ import {
   Route
 } from "react-router-dom"
 import { Home } from './components/Home'
-import { BuyingDHome } from './components/decisions/BuyingDHome'
 import { BuyingD } from './components/decisions/BuyingD'
 import { EnrollHome } from './components/enrollment/EnrollHome'
 import { AdoptionHome } from './components/adoptions/AdoptionHome'

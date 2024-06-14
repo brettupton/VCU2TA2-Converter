@@ -73,22 +73,22 @@ class TXT {
                     const Enrl = parseInt(line.substring(headerIndices[4], headerIndices[5]))
                     const Sales = parseInt(line.substring(headerIndices[5], headerIndices[6]))
 
-                    // TODO: Download sales only from F15 to F24
-                    if (ISBN.startsWith('822') || Title.startsWith('EBK') || Term === "F24") {
+                    if (ISBN.startsWith('822') || Title.startsWith('EBK')) {
                         return
                     }
 
                     if (!allSales[ISBN]) {
                         allSales[ISBN] = {
                             Title: Title,
+                            Semesters: {},
                             totalSales: 0,
                             totalEnrl: 0,
                             avgSE: 0
                         }
                     }
 
-                    if (!allSales[ISBN][Term]) {
-                        allSales[ISBN][Term] = {
+                    if (!allSales[ISBN]["Semesters"][Term]) {
+                        allSales[ISBN]["Semesters"][Term] = {
                             Courses: [],
                             Enrl: null,
                             Sales: null
@@ -96,19 +96,19 @@ class TXT {
                     }
 
                     // Count sections only and keep track of dept/course
-                    const existingCourseIndex = allSales[ISBN][Term].Courses.findIndex(course => course.Course === Course)
+                    const existingCourseIndex = allSales[ISBN]["Semesters"][Term].Courses.findIndex(course => course.Course === Course)
                     if (existingCourseIndex === -1) {
-                        allSales[ISBN][Term].Courses.push({ Course: Course.trim(), Sections: 1 })
+                        allSales[ISBN]["Semesters"][Term].Courses.push({ Course: Course.trim(), Sections: 1 })
                     } else {
-                        allSales[ISBN][Term].Courses[existingCourseIndex].Sections++
+                        allSales[ISBN]["Semesters"][Term].Courses[existingCourseIndex].Sections++
                     }
 
                     // Add to totalSales and totalEnrl only on first ISBN
-                    if (allSales[ISBN][Term].Enrl === null && allSales[ISBN][Term].Sales === null) {
+                    if (allSales[ISBN]["Semesters"][Term].Enrl === null && allSales[ISBN]["Semesters"][Term].Sales === null) {
                         allSales[ISBN].totalSales += Sales
                         allSales[ISBN].totalEnrl += Enrl
-                        allSales[ISBN][Term].Enrl = Enrl
-                        allSales[ISBN][Term].Sales = Sales
+                        allSales[ISBN]["Semesters"][Term].Enrl = Enrl
+                        allSales[ISBN]["Semesters"][Term].Sales = Sales
                     }
 
                     allSales[ISBN].avgSE = allSales[ISBN].totalEnrl > 0 ? (allSales[ISBN].totalSales / allSales[ISBN].totalEnrl).toFixed(4) : 0
@@ -146,7 +146,6 @@ class TXT {
 
                 for (const ISBN in BD) {
                     const pastSales = prevSales[ISBN]
-                    console.log(pastSales)
                     const currBook = BD[ISBN]
                     const newCalc = pastSales ? Math.ceil(currBook.Enrollment * pastSales.avgSE) : Math.ceil(currBook.Enrollment / 5)
 

@@ -4,7 +4,7 @@ const { app, BrowserWindow, ipcMain, dialog } = require('electron')
 const isDev = (process.env.APP_DEV?.trim() === "true")
 const XLSXToCSVArr = require('../src/functions/enrollment/xlsx')
 const { matchUserOfferings, matchXLSXToCSV } = require('../src/functions/enrollment/match')
-const searchSales = require('../src/functions/decisions/searchSales')
+const searchISBN = require('../src/functions/decisions/searchSales')
 const matchPrevAdoptions = require('../src/functions/adoptions/match')
 const CSV = require('../src/classes/CSV')
 const TXT = require('../src/classes/TXT')
@@ -12,7 +12,7 @@ const TXT = require('../src/classes/TXT')
 
 try {
     require('electron-reloader')(module, {
-        ignore: ['node_modules', 'build']
+        ignore: ['node_modules', 'build', 'src/stores/**/*']
     });
 } catch (err) {
     console.log('Error initializing electron-reloader:', err);
@@ -200,18 +200,19 @@ const createWindow = async () => {
 
         txt.readBD(file.path)
             .then(([newBD, term]) => {
-                fs.writeFile(path.join(bdPath, `${term}.json`), JSON.stringify(newBD, null, 4), 'utf8', err => {
+                fs.writeFileSync(path.join(bdPath, `${term}.json`), JSON.stringify(newBD, null, 4), 'utf8', err => {
                     if (err) {
                         console.error(err)
                     }
+
                 })
-                event.sender.send('new-bd', newBD)
+                event.sender.send('bd-data', { BD: newBD, term: term })
             })
             .catch((err) => { console.error(err) })
     })
 
-    ipcMain.on('search-sales', (event, { parameter, searchInfo }) => {
-        const result = searchSales(parameter, searchInfo)
+    ipcMain.on('search-isbn', (event, { ISBN, term }) => {
+        const result = searchISBN(ISBN, term)
 
         event.sender.send('search-result', { result: result })
     })
@@ -233,7 +234,7 @@ const createWindow = async () => {
     })
 
     ipcMain.on('new-sales', (event, data) => {
-        const storePath = path.join(srcPath, 'stores', `${global.store}`)
+        const storePath = path.join(srcPath, 'stores', `${data.store}`)
         const termPath = path.join(storePath, 'sales', `${data.term}.json`)
 
         if (!fs.existsSync(storePath)) {
@@ -256,7 +257,7 @@ const createWindow = async () => {
                         {
                             type: "info",
                             title: "OwlGuide",
-                            message: `Upload for store ${global.store} successful`
+                            message: `Upload for store ${data.store} successful`
                         })
                 })
             })

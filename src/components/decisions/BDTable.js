@@ -1,4 +1,4 @@
-const BDTable = ({ BDData, sortAlpha, handleISBNClick }) => {
+export const BDTable = ({ BDData, sortAlpha, handleISBNClick }) => {
 
     return (
         <div className="container-fluid">
@@ -44,7 +44,5 @@ const BDTable = ({ BDData, sortAlpha, handleISBNClick }) => {
                 </div>
             </div>
         </div>
-    );
+    )
 }
-
-export default BDTable;
