@@ -57,7 +57,7 @@ export const DevHome = () => {
             </div>
             <div className="row mt-1">
                 <div className="col">
-                    <small>Format: Term, Dept/Course, Title, ISBN, Act Enrl, Act Sales</small>
+                    <small>Sequence: Term, Dept/Course, Title, ISBN, Act Enrl, Act Sales</small>
                 </div>
             </div>
         </div>

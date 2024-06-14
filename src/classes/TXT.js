@@ -1,7 +1,7 @@
 const fs = require('fs')
 
 class TXT {
-    readAllSales = (path) => {
+    cleanFile = (path) => {
         return new Promise((resolve, reject) => {
             fs.readFile(path, 'utf-8', (err, data) => {
                 if (err) {
@@ -10,6 +10,10 @@ class TXT {
 
                 const lines = data.split("\n")
                 let header
+
+                // This is always true no matter the different manager report
+                const termLine = lines[7].trim()
+                const term = termLine.charAt(termLine.length - 3)
 
                 // Find third instance of 'Page: 1'
                 // Everything before is irrelevant
@@ -25,15 +29,16 @@ class TXT {
                     }
                 }
 
-                const salesData = lines.slice(pageOneIndex + 1)
+                // Third page 1 and last two lines (*** End of Report *** and blank)
+                const finalData = lines.slice(pageOneIndex + 1, lines.length - 2)
 
                 // Remove dash line, header and extraneous TA2 data
-                for (let i = 0; i < salesData.length; i++) {
-                    if ((/^-+$/).test(salesData[i].trim())) {
-                        header = salesData[i - 1]
+                for (let i = 0; i < finalData.length; i++) {
+                    if ((/^-+$/).test(finalData[i].trim())) {
+                        header = finalData[i - 1]
                         const patternStartIndex = Math.max(0, i - 5)
                         const patternEndIndex = i + 1
-                        salesData.splice(patternStartIndex, patternEndIndex - patternStartIndex);
+                        finalData.splice(patternStartIndex, patternEndIndex - patternStartIndex);
                         // Adjust the loop index to continue checking after the removed section
                         i = patternStartIndex - 1
                     }
@@ -49,10 +54,18 @@ class TXT {
                     headerIndices.push(header.indexOf(currTerm))
                 }
 
-                const allSales = {}
+                resolve([term, headerIndices, finalData])
+            })
+        })
+    }
+
+    readAllSales = async (path) => {
+        const allSales = {}
+        return this.cleanFile(path)
+            .then(([term, headerIndices, finalData]) => {
 
                 // Loop through and consolidate data per ISBN
-                salesData.forEach((line) => {
+                finalData.forEach((line) => {
                     const Term = line.substring(headerIndices[0], headerIndices[1]).trim()
                     const Course = line.substring(headerIndices[1], headerIndices[2]).trim()
                     const Title = line.substring(headerIndices[2], headerIndices[3]).trim()
@@ -60,7 +73,8 @@ class TXT {
                     const Enrl = parseInt(line.substring(headerIndices[4], headerIndices[5]))
                     const Sales = parseInt(line.substring(headerIndices[5], headerIndices[6]))
 
-                    if (ISBN.startsWith('822') || Title.startsWith('EBK')) {
+                    // TODO: Download sales only from F15 to F24
+                    if (ISBN.startsWith('822') || Title.startsWith('EBK') || Term === "F24") {
                         return
                     }
 
@@ -99,9 +113,56 @@ class TXT {
 
                     allSales[ISBN].avgSE = allSales[ISBN].totalEnrl > 0 ? (allSales[ISBN].totalSales / allSales[ISBN].totalEnrl).toFixed(4) : 0
                 })
-                resolve(allSales)
+                return allSales
             })
-        })
+            .catch((err) => {
+                console.error(err)
+            })
+    }
+
+    readBD = async (path) => {
+        return this.cleanFile(path)
+            .then(([term, headerIndices, finalData]) => {
+                const BD = {}
+
+                finalData.forEach(line => {
+                    const Title = line.substring(headerIndices[0], headerIndices[1]).trim()
+                    const ISBN = (line.substring(headerIndices[1], headerIndices[2]).trim()).replace(/-/g, '')
+                    const Enrollment = parseInt(line.substring(headerIndices[2], headerIndices[3]).trim())
+                    const Decision = parseInt(line.substring(headerIndices[3], headerIndices[4]).trim())
+
+                    if (ISBN.startsWith('822') || Title.startsWith('EBK')) {
+                        return
+                    }
+
+                    if (!BD[ISBN]) {
+                        BD[ISBN] = { Title, Enrollment, Decision }
+                    }
+                })
+
+                const prevSales = require(`../stores/${global.store}/sales/${term}.json`)
+
+                const newBD = {}
+
+                for (const ISBN in BD) {
+                    const pastSales = prevSales[ISBN]
+                    console.log(pastSales)
+                    const currBook = BD[ISBN]
+                    const newCalc = pastSales ? Math.ceil(currBook.Enrollment * pastSales.avgSE) : Math.ceil(currBook.Enrollment / 5)
+
+                    newBD[ISBN] = {
+                        Title: currBook.Title,
+                        Enrollment: currBook.Enrollment,
+                        Decision: currBook.Decision,
+                        CalcBD: term === 'A' ? Math.max(1, newCalc) : newCalc,
+                        Diff: Math.abs(currBook.Decision - newCalc)
+                    }
+                }
+                return [newBD, term]
+            })
+            .catch((err) => {
+                console.error(err)
+            })
     }
 }
 

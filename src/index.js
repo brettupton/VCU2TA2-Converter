@@ -9,6 +9,7 @@ import {
 } from "react-router-dom"
 import { Home } from './components/Home'
 import { BuyingDHome } from './components/decisions/BuyingDHome'
+import { BuyingD } from './components/decisions/BuyingD'
 import { EnrollHome } from './components/enrollment/EnrollHome'
 import { AdoptionHome } from './components/adoptions/AdoptionHome'
 import { DevHome } from './components/dev/DevHome'
@@ -29,7 +30,7 @@ const App = () => {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/enrollment" element={<EnrollHome />} />
-          <Route path="/buying" element={<BuyingDHome />} />
+          <Route path="/buying" element={<BuyingD />} />
           <Route path="/adoptions" element={<AdoptionHome />} />
           <Route path="/dev" element={<DevHome />} />
         </Routes>

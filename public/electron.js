@@ -3,13 +3,12 @@ const fs = require('fs')
 const { app, BrowserWindow, ipcMain, dialog } = require('electron')
 const isDev = (process.env.APP_DEV?.trim() === "true")
 const XLSXToCSVArr = require('../src/functions/enrollment/xlsx')
-const { BDFromXLSB, addNewBD } = require('../src/functions/decisions/buyingDecision')
-const readTXT = require('../src/functions/decisions/readTXT')
-const searchSales = require('../src/functions/decisions/searchSales')
 const { matchUserOfferings, matchXLSXToCSV } = require('../src/functions/enrollment/match')
+const searchSales = require('../src/functions/decisions/searchSales')
+const matchPrevAdoptions = require('../src/functions/adoptions/match')
 const CSV = require('../src/classes/CSV')
 const TXT = require('../src/classes/TXT')
-const matchPrevAdoptions = require('../src/functions/adoptions/match')
+
 
 try {
     require('electron-reloader')(module, {
@@ -23,6 +22,8 @@ let win
 
 const csv = new CSV()
 const txt = new TXT()
+const srcPath = path.join(__dirname, '../src')
+const devFormatPath = path.join(__dirname, '..', 'resources', 'formatted')
 
 const createWindow = async () => {
     win = new BrowserWindow({
@@ -69,13 +70,14 @@ const createWindow = async () => {
     ipcMain.on('store-change', (event, data) => {
         global.store = data.store
     })
+
     // ** ENROLLMENT **
 
     ipcMain.on('format-file-check', (event, enrollInfo) => {
         const { term, year } = enrollInfo
 
         const basePath = isDev ?
-            path.join(__dirname, '..', 'resources', 'formatted') :
+            devFormatPath :
             path.join(app.getPath('appData'), 'formatted')
         const formatDir = path.join(basePath, `${term}${year}`)
 
@@ -106,7 +108,7 @@ const createWindow = async () => {
         const { term, year, enrollFile, formatFile } = enrollInfo
 
         const basePath = isDev ?
-            path.join(__dirname, '..', 'resources', 'formatted') :
+            devFormatPath :
             path.join(app.getPath('appData'), 'formatted')
         const formatDir = path.join(basePath, `${term}${year}`)
 
@@ -152,7 +154,7 @@ const createWindow = async () => {
         const year = enroll[0]["Year"]
 
         const basePath = isDev ?
-            path.join(__dirname, '..', 'resources', 'formatted') :
+            devFormatPath :
             path.join(app.getPath('appData'), 'formatted')
         const formatDir = path.join(basePath, `${term}${year}`)
 
@@ -184,25 +186,28 @@ const createWindow = async () => {
 
     // ** BUYING DECISION **
 
-    ipcMain.on('bd-file', (event, fileInfo) => {
-        const { path, extension } = fileInfo
+    ipcMain.on('bd-file', (event, { file, bdPrefer }) => {
+        const bdPath = path.join(srcPath, 'stores', `${global.store}`, 'bd')
 
-        switch (extension) {
-            case "txt":
-                readTXT(path)
-                    .then(([term, txtBD]) => {
-                        const [newBD, Sales] = addNewBD(term, txtBD)
-                        event.sender.send('bd-data', { BD: newBD, sales: Sales, term: term })
-                    })
-                break
-            case "xlsb":
-                const jsonBD = BDFromXLSB(path)
-                const [newBD, Sales] = addNewBD(jsonBD)
-                event.sender.send('bd-data', { BD: newBD, sales: Sales })
-                break
-            default:
-                break
+        if (!fs.existsSync(bdPath)) {
+            fs.mkdir(bdPath, { recursive: true }, (err) => {
+                if (err) {
+                    dialog.showErrorBox("Error", "Something went wrong with creating new BD directory")
+                    console.error(err)
+                }
+            })
         }
+
+        txt.readBD(file.path)
+            .then(([newBD, term]) => {
+                fs.writeFile(path.join(bdPath, `${term}.json`), JSON.stringify(newBD, null, 4), 'utf8', err => {
+                    if (err) {
+                        console.error(err)
+                    }
+                })
+                event.sender.send('new-bd', newBD)
+            })
+            .catch((err) => { console.error(err) })
     })
 
     ipcMain.on('search-sales', (event, { parameter, searchInfo }) => {
@@ -228,12 +233,11 @@ const createWindow = async () => {
     })
 
     ipcMain.on('new-sales', (event, data) => {
-        const basePath = path.join(__dirname, '../src')
-        const storePath = path.join(basePath, 'stores', `${data.store}`)
-        const termPath = path.join(storePath, 'Ωsales', `${data.term}.json`)
+        const storePath = path.join(srcPath, 'stores', `${global.store}`)
+        const termPath = path.join(storePath, 'sales', `${data.term}.json`)
 
         if (!fs.existsSync(storePath)) {
-            fs.mkdir(path.join(storePath, 'Ωsales'), { recursive: true }, (err) => {
+            fs.mkdir(path.join(storePath, 'sales'), { recursive: true }, (err) => {
                 if (err) {
                     console.error(err)
                     return
@@ -252,7 +256,7 @@ const createWindow = async () => {
                         {
                             type: "info",
                             title: "OwlGuide",
-                            message: `Upload for store ${data.store} successful`
+                            message: `Upload for store ${global.store} successful`
                         })
                 })
             })

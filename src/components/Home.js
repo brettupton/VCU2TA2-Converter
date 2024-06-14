@@ -46,7 +46,7 @@ export const Home = () => {
                 </div>
             </div>
             {store === 0 &&
-                <div className="dropdown">
+                <div className="text-center dropdown">
                     <button className="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                         Store
                     </button>
