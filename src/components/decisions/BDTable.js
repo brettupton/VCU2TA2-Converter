@@ -1,11 +1,20 @@
-export const BDTable = ({ BDData, sortAlpha, handleISBNClick }) => {
+export const BDTable = ({ BDData, sortAlpha, bdDisplay, latestDate, handleISBNClick }) => {
+
+    const filteredBDData = Object.keys(BDData).filter((ISBN) => {
+        const difference = BDData[ISBN].Diff
+        if (bdDisplay === 'all') return true
+        if (bdDisplay === 'far' && difference > 5) return true
+        if (bdDisplay === 'close' && difference > 0 && difference <= 5) return true
+        if (bdDisplay === 'exact' && difference === 0) return true
+        return false
+    })
 
     return (
         <div className="container-fluid">
             <div className="row">
                 <div className="col mx-auto">
                     <div className="table-responsive rounded"
-                        style={{ "height": "92vh" }}>
+                        style={{ "height": "89vh" }}>
                         <table className="table table-bordered">
                             <thead className="sticky-top top-0 table-dark" style={{ "padding": 0 }}>
                                 <tr className="align-middle" style={{ "border": 0 }}>
@@ -20,17 +29,17 @@ export const BDTable = ({ BDData, sortAlpha, handleISBNClick }) => {
                                         Title
                                     </th>
                                     <th className="text-center" style={{ "border": 0 }}>Enrl</th>
-                                    <th className="text-center" style={{ "border": 0 }}>Curr</th>
-                                    <th className="text-center" style={{ "border": 0 }}>New</th>
+                                    <th className="text-center" style={{ "border": 0 }}>Est</th>
+                                    <th className="text-center" style={{ "border": 0 }}>BD</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {Object.keys(BDData).map((ISBN, key) => (
+                                {filteredBDData.map((ISBN, key) => (
                                     <tr key={key} className={
                                         BDData[ISBN].Diff === 0 ?
                                             "table-success" : BDData[ISBN].Diff > 5 ?
                                                 "table-danger" :
-                                                "table-warning"} onClick={() => handleISBNClick(ISBN)}>
+                                                "table-warning"} onClick={() => handleISBNClick(ISBN, BDData[ISBN].Title)}>
                                         <td>{ISBN}</td>
                                         <td>{BDData[ISBN].Title}</td>
                                         <td className="text-center">{BDData[ISBN].Enrollment}</td>
@@ -41,6 +50,14 @@ export const BDTable = ({ BDData, sortAlpha, handleISBNClick }) => {
                             </tbody>
                         </table>
                     </div>
+                </div>
+            </div>
+            <div className="row justify-content-between">
+                <div className="col-3">
+                    {latestDate.length > 0 && `Last BD: ${latestDate}`}
+                </div>
+                <div className="col-1">
+                    {filteredBDData.length} / {Object.keys(BDData).length}
                 </div>
             </div>
         </div>

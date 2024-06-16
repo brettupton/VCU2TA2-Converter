@@ -1,7 +1,7 @@
 {
     "watch": [
         "electron.js",
-        "/src/functions/*"
+        "/src/classes/*"
     ],
     "ext": "js,json",
     "exec": "electron ."

@@ -1,6 +1,6 @@
 export const Footer = ({ store, handleStoreChange }) => {
     return (
-        <footer class="text-white fixed-bottom">
+        <footer className="text-white fixed-bottom">
             <div className="container mx-0 px-0">
                 <div className="row justify-content-between">
                     <div className="col-2">

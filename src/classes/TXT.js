@@ -1,4 +1,5 @@
 const fs = require('fs')
+const path = require('path')
 
 class TXT {
     cleanFile = (path) => {
@@ -120,9 +121,11 @@ class TXT {
             })
     }
 
-    readBD = async (path) => {
-        return this.cleanFile(path)
+    readBD = async (TXTPath) => {
+        return this.cleanFile(TXTPath)
             .then(([term, headerIndices, finalData]) => {
+                // Create new BD with TA2 file data
+                const prevSales = require(`../stores/${global.store}/sales/${term}.json`)
                 const BD = {}
 
                 finalData.forEach(line => {
@@ -131,33 +134,57 @@ class TXT {
                     const Enrollment = parseInt(line.substring(headerIndices[2], headerIndices[3]).trim())
                     const Decision = parseInt(line.substring(headerIndices[3], headerIndices[4]).trim())
 
-                    if (ISBN.startsWith('822') || Title.startsWith('EBK')) {
+                    if (ISBN.startsWith('822') || ISBN === 'None' || Title.startsWith('EBK')) {
                         return
                     }
 
                     if (!BD[ISBN]) {
-                        BD[ISBN] = { Title, Enrollment, Decision }
+                        const pastSales = prevSales[ISBN]
+                        const newCalc = pastSales ? Math.ceil(Enrollment * pastSales.avgSE) : Math.ceil(Enrollment / 5)
+
+                        BD[ISBN] = {
+                            Title: Title,
+                            Enrollment: Enrollment,
+                            Decision: Decision,
+                            CalcBD: term === 'A' ? Math.max(1, newCalc) : newCalc,
+                            Diff: Math.abs(Decision - newCalc)
+                        }
                     }
                 })
 
-                const prevSales = require(`../stores/${global.store}/sales/${term}.json`)
+                // Compare newly created BD with most recent BD, if it exists
+                let latestDate = ""
+                const changeBD = {}
+                const bdPath = path.join(__dirname, '../', 'stores', `${global.store}`, 'bd', `${term}`)
 
-                const newBD = {}
+                if (fs.existsSync(bdPath)) {
+                    // Get all files in directory and sort to find most recent
+                    const bdFiles = fs.readdirSync(bdPath).map(file => ({
+                        name: file,
+                        date: new Date(file.split(".")[0])
+                    }))
 
-                for (const ISBN in BD) {
-                    const pastSales = prevSales[ISBN]
-                    const currBook = BD[ISBN]
-                    const newCalc = pastSales ? Math.ceil(currBook.Enrollment * pastSales.avgSE) : Math.ceil(currBook.Enrollment / 5)
+                    if (Object.keys(bdFiles).length > 0) {
+                        bdFiles.sort(((a, b) => b.date - a.date))
+                        latestDate = bdFiles[0].name
 
-                    newBD[ISBN] = {
-                        Title: currBook.Title,
-                        Enrollment: currBook.Enrollment,
-                        Decision: currBook.Decision,
-                        CalcBD: term === 'A' ? Math.max(1, newCalc) : newCalc,
-                        Diff: Math.abs(currBook.Decision - newCalc)
+                        const prevBD = require(path.join(bdPath, latestDate))
+
+                        for (const ISBN in BD) {
+                            const newBook = BD[ISBN]
+                            const oldBook = prevBD[ISBN]
+
+                            // Check if old entry exists and if Enrollment or CalcBD have changed
+                            if (!oldBook ||
+                                newBook.Enrollment !== oldBook.Enrollment ||
+                                newBook.CalcBD !== oldBook.CalcBD) {
+                                changeBD[ISBN] = newBook
+                            }
+                        }
                     }
                 }
-                return [newBD, term]
+
+                return [BD, changeBD, term, latestDate]
             })
             .catch((err) => {
                 console.error(err)

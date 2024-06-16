@@ -27,7 +27,7 @@
     "react-build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "electron": "wait-on http://localhost:3000 && cross-env APP_DEV=true nodemon --config nodemon.json",
+    "electron": "wait-on http://192.168.1.177:3000 && cross-env APP_DEV=true nodemon --config nodemon.json",
     "dev": "concurrently -k \"cross-env BROWSER=none npm start\" \"npm run electron\"",
     "electron-build": "electron-builder",
     "build": "npm run react-build && npm run electron-build"

@@ -4,7 +4,7 @@ const { app, BrowserWindow, ipcMain, dialog } = require('electron')
 const isDev = (process.env.APP_DEV?.trim() === "true")
 const XLSXToCSVArr = require('../src/functions/enrollment/xlsx')
 const { matchUserOfferings, matchXLSXToCSV } = require('../src/functions/enrollment/match')
-const searchISBN = require('../src/functions/decisions/searchSales')
+const searchISBN = require('../src/functions/decisions/searchISBN')
 const matchPrevAdoptions = require('../src/functions/adoptions/match')
 const CSV = require('../src/classes/CSV')
 const TXT = require('../src/classes/TXT')
@@ -186,33 +186,37 @@ const createWindow = async () => {
 
     // ** BUYING DECISION **
 
-    ipcMain.on('bd-file', (event, { file, bdPrefer }) => {
+    ipcMain.on('bd-file', (event, { file }) => {
+        const date = new Date().toISOString().split('T')[0]
         const bdPath = path.join(srcPath, 'stores', `${global.store}`, 'bd')
 
-        if (!fs.existsSync(bdPath)) {
-            fs.mkdir(bdPath, { recursive: true }, (err) => {
-                if (err) {
-                    dialog.showErrorBox("Error", "Something went wrong with creating new BD directory")
-                    console.error(err)
-                }
-            })
-        }
-
         txt.readBD(file.path)
-            .then(([newBD, term]) => {
-                fs.writeFileSync(path.join(bdPath, `${term}.json`), JSON.stringify(newBD, null, 4), 'utf8', err => {
+            .then(([newBD, changeBD, term, latestDate]) => {
+                const bdTermPath = path.join(bdPath, term)
+
+                // Create buying decision directory for term specified, if it does not already exist
+                if (!fs.existsSync(bdTermPath)) {
+                    fs.mkdir(bdTermPath, { recursive: true }, (err) => {
+                        if (err) {
+                            dialog.showErrorBox("Error", "Something went wrong with creating new BD directory")
+                            console.error(err)
+                        }
+                    })
+                }
+
+                fs.writeFileSync(path.join(bdTermPath, `${date}.json`), JSON.stringify(newBD, null, 4), 'utf8', err => {
                     if (err) {
                         console.error(err)
                     }
 
                 })
-                event.sender.send('bd-data', { BD: newBD, term: term })
+                event.sender.send('bd-data', { BD: newBD, changeBD: changeBD, term: term, latestDate: latestDate.split(".")[0] })
             })
             .catch((err) => { console.error(err) })
     })
 
-    ipcMain.on('search-isbn', (event, { ISBN, term }) => {
-        const result = searchISBN(ISBN, term)
+    ipcMain.on('search-isbn', (event, { ISBN, Title, term }) => {
+        const result = searchISBN(ISBN, Title, term)
 
         event.sender.send('search-result', { result: result })
     })
