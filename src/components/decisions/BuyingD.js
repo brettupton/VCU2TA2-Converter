@@ -144,7 +144,7 @@ export const BuyingD = () => {
                             }
                         </div>
                         {currBook.ISBN !== 0 &&
-                            <div className="col-4">
+                            <div className="col-4 mt-n5">
                                 <VertSalesTable currBook={currBook} term={term} handleEnrollmentChange={handleEnrollmentChange} calcEnrollment={calcEnrollment} />
                             </div>
                         }

@@ -8,3 +8,7 @@ body {
   font-weight: 400;
   font-style: normal;
 }
+
+.mt-n5 {
+  margin-top: -3rem !important;
+}

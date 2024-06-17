@@ -1,5 +1,5 @@
 export const VertSalesTable = ({ currBook, term, handleEnrollmentChange, calcEnrollment }) => {
-  const years = [15, 16, 17, 18, 19, 20, 21, 22, 23]
+  const years = [15, 16, 17, 18, 19, 20, 21, 22, 23].reverse()
 
   const numSemesters = Object.keys(currBook.Semesters).length
 
@@ -74,7 +74,7 @@ export const VertSalesTable = ({ currBook, term, handleEnrollmentChange, calcEnr
       {/* TODO: Click on Term and show full course list */}
       <div className="row mx-0">
         <div className="col mx-auto">
-          <div style={{ maxHeight: "35vh", overflowY: "auto" }}>
+          <div style={{ maxHeight: "38vh", overflowY: "auto" }}>
             <div className="table-responsive">
               <table className="table table-striped table-hover">
                 <thead className="sticky-top">

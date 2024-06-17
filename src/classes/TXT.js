@@ -74,6 +74,7 @@ class TXT {
                     const Enrl = parseInt(line.substring(headerIndices[4], headerIndices[5]))
                     const Sales = parseInt(line.substring(headerIndices[5], headerIndices[6]))
 
+                    // TODO: Don't count VST
                     if (ISBN.startsWith('822') || Title.startsWith('EBK')) {
                         return
                     }
@@ -153,6 +154,7 @@ class TXT {
                 })
 
                 // Compare newly created BD with most recent BD, if it exists
+                // TODO: Don't compare if adopted to SPEC
                 let latestDate = ""
                 const changeBD = {}
                 const bdPath = path.join(__dirname, '../', 'stores', `${global.store}`, 'bd', `${term}`)
