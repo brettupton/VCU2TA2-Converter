@@ -75,7 +75,7 @@ class TXT {
                     const Sales = parseInt(line.substring(headerIndices[5], headerIndices[6]))
 
                     // TODO: Don't count VST
-                    if (ISBN.startsWith('822') || Title.startsWith('EBK')) {
+                    if (ISBN.startsWith('822') || ISBN.includes("** E BOOK **") || Title.startsWith('EBK')) {
                         return
                     }
 
