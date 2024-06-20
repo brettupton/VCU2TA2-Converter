@@ -1,11 +1,11 @@
 export const VertSalesTable = ({ currBook, term, handleEnrollmentChange, calcEnrollment }) => {
   const years = [15, 16, 17, 18, 19, 20, 21, 22, 23].reverse()
 
-  const numSemesters = Object.keys(currBook.Semesters).length
+  const numSemesters = Object.keys(currBook.semesters).length
 
-  const averageEnrl = numSemesters > 0 ? (currBook.totalEnrl / numSemesters).toFixed(0) : 0
-  const averageSales = numSemesters > 0 ? (currBook.totalSales / numSemesters).toFixed(0) : 0
-  const calcBD = currBook.avgSE ? Math.ceil(calcEnrollment * currBook.avgSE) : Math.ceil(calcEnrollment / 5)
+  const averageEnrl = numSemesters > 0 ? (currBook.total_act_enrl / numSemesters).toFixed(0) : 0
+  const averageSales = numSemesters > 0 ? (currBook.total_act_sales / numSemesters).toFixed(0) : 0
+  const calcBD = (currBook.total_act_sales / currBook.total_act_enrl) ? Math.ceil(calcEnrollment * (currBook.total_act_sales / currBook.total_act_enrl || 0)) : Math.ceil(calcEnrollment * 0.2)
 
   return (
     <div className="container-fluid p-0">
@@ -16,7 +16,7 @@ export const VertSalesTable = ({ currBook, term, handleEnrollmentChange, calcEnr
       </div>
       <div className="row mt-1">
         <div className="col">
-          {currBook.Title}
+          {currBook.title}
         </div>
       </div>
       <div className="row justify-content-middle">
@@ -51,10 +51,10 @@ export const VertSalesTable = ({ currBook, term, handleEnrollmentChange, calcEnr
                     return (
                       <tr key={key}>
                         <th scope="row">{term + year}</th>
-                        <td className="text-center">{currBook.Semesters[term + year] ? currBook.Semesters[term + year].Enrl : ""}</td>
-                        <td className="text-center">{currBook.Semesters[term + year] ? currBook.Semesters[term + year].Sales : ""}</td>
+                        <td className="text-center">{currBook.semesters[term + year] ? currBook.semesters[term + year].act_enrl : ""}</td>
+                        <td className="text-center">{currBook.semesters[term + year] ? currBook.semesters[term + year].act_sales : ""}</td>
                         <td className="text-center">{
-                          currBook.Semesters[term + year] ? currBook.Semesters[term + year].Enrl > 0 ? (currBook.Semesters[term + year].Sales / currBook.Semesters[term + year].Enrl).toFixed(4) : "" : ""
+                          currBook.semesters[term + year] ? (currBook.semesters[term + year].act_sales / currBook.semesters[term + year].act_enrl || 0).toFixed(4) : ""
                         }</td>
                       </tr>
                     )
@@ -63,7 +63,7 @@ export const VertSalesTable = ({ currBook, term, handleEnrollmentChange, calcEnr
                     <th scope="row">Avg</th>
                     <td className="text-center">{averageEnrl}</td>
                     <td className="text-center">{averageSales}</td>
-                    <td className="text-center">{currBook.avgSE}</td>
+                    <td className="text-center">{currBook.total_act_sales / currBook.total_act_enrl || 0}</td>
                   </tr>
                 </tbody>
               </table>
@@ -85,11 +85,11 @@ export const VertSalesTable = ({ currBook, term, handleEnrollmentChange, calcEnr
                 </thead>
                 <tbody>
                   {years.map((year, key) => {
-                    const semesterInfo = currBook?.Semesters[term + year]
+                    const semesterInfo = currBook?.semesters[term + year]
                     return (
                       <tr key={key}>
                         <th scope="row">{term + year}</th>
-                        <td colSpan={2}>{semesterInfo ? semesterInfo.Courses[0].Course : ""}</td>
+                        <td colSpan={2}>{semesterInfo ? semesterInfo.courses[0].course : ""}</td>
                       </tr>
                     )
                   })}

@@ -1,6 +1,7 @@
 const fs = require('fs')
 const path = require('path')
 const fetchBookData = require('../functions/dev/fetchBookData')
+const convertTitleCase = require('../functions/dev/convertTitleCase')
 
 class TXT {
     cleanFile = (path) => {
@@ -73,7 +74,7 @@ class TXT {
                         Term,
                         Course,
                         Section,
-                        Professor,
+                        rawProfessor,
                         rawISBN,
                         rawEstEnrl,
                         rawActEnrl,
@@ -82,6 +83,7 @@ class TXT {
                         rawActSales
                     ] = headerIndices.map((start, i) => line.substring(start, headerIndices[i + 1]).trim())
 
+                    const Professor = convertTitleCase(rawProfessor)
                     const ISBN = rawISBN.replace(/-/g, '')
                     const EstEnrl = parseInt(rawEstEnrl) || 0
                     const ActEnrl = parseInt(rawActEnrl) || 0
@@ -92,6 +94,8 @@ class TXT {
                     if (ISBN.startsWith('822') || ISBN.includes("** E BOOK **") || ISBN.includes("None")) {
                         return
                     }
+
+                    // TODO: Sort Semesters and Courses
 
                     if (allSales[ISBN]) {
                         if (!allSales[ISBN]["semesters"][Term]) {
@@ -191,7 +195,7 @@ class TXT {
         return this.cleanFile(TXTPath)
             .then(([term, headerIndices, finalData]) => {
                 // Create new BD with TA2 file data
-                const prevSales = require(`../stores/${global.store}/sales/${term}.json`)
+                const prevAllSales = require(`../stores/${global.store}/sales/${term}.json`)
                 const BD = {}
 
                 finalData.forEach(line => {
@@ -199,14 +203,37 @@ class TXT {
                     const ISBN = (line.substring(headerIndices[1], headerIndices[2]).trim()).replace(/-/g, '')
                     const Enrollment = parseInt(line.substring(headerIndices[2], headerIndices[3]).trim())
                     const Decision = parseInt(line.substring(headerIndices[3], headerIndices[4]).trim())
+                    let avgSE = 0
 
                     if (ISBN.startsWith('822') || ISBN === 'None' || Title.startsWith('EBK')) {
                         return
                     }
 
                     if (!BD[ISBN]) {
-                        const pastSales = prevSales[ISBN]
-                        const newCalc = pastSales ? Math.ceil(Enrollment * pastSales.avgSE) : Math.ceil(Enrollment / 5)
+                        if (prevAllSales[ISBN]) {
+                            const prevSemester = Object.keys(prevAllSales[ISBN]["semesters"]).slice(-1)[0]
+                            console.log(prevSemester)
+                            const prevSemesterEnrl = prevAllSales[ISBN]["semesters"][prevSemester]["act_enrl"]
+                            const prevSemesterSales = prevAllSales[ISBN]["semesters"][prevSemester]["act_sales"]
+
+                            if (prevAllSales[ISBN].total_act_enrl - prevSemesterEnrl === 0) {
+                                // Only one semester of previous data, skip weighted average calculation
+                                avgSE = prevAllSales[ISBN].total_act_sales / prevAllSales[ISBN].total_act_enrl || 0
+                            } else {
+                                // Subtract previous sales from total and get new average
+                                const newAvgSE = (prevAllSales[ISBN].total_act_sales - prevSemesterSales) / (prevAllSales[ISBN].total_act_enrl - prevSemesterEnrl) || 0
+                                const prevTermAvgSE = prevSemesterSales / prevSemesterEnrl || 0
+
+                                const alpha = 0.5
+                                // Exponential Smoothing
+                                avgSE = (1 - alpha) * newAvgSE + alpha * prevTermAvgSE
+                            }
+                        } else {
+                            // No past sales data, divide enrollment by 1/5
+                            avgSE = 0.2
+                        }
+
+                        const newCalc = avgSE * Enrollment
 
                         BD[ISBN] = {
                             Title: Title,
@@ -219,7 +246,6 @@ class TXT {
                 })
 
                 // Compare newly created BD with most recent BD, if it exists
-                // TODO: Don't compare if adopted to SPEC
                 let latestDate = ""
                 const changeBD = {}
                 const bdPath = path.join(__dirname, '../', 'stores', `${global.store}`, 'bd', `${term}`)
