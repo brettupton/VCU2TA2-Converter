@@ -1,5 +1,6 @@
 const fs = require('fs')
 const path = require('path')
+const fetchBookData = require('../functions/dev/fetchBookData')
 
 class TXT {
     cleanFile = (path) => {
@@ -12,7 +13,7 @@ class TXT {
                 const lines = data.split("\n")
                 let header
 
-                // This is always true no matter the different manager report
+                // This is always true no matter the manager report
                 const termLine = lines[7].trim()
                 const term = termLine.charAt(termLine.length - 3)
 
@@ -33,15 +34,15 @@ class TXT {
                 // Third page 1 and last two lines (*** End of Report *** and blank)
                 const finalData = lines.slice(pageOneIndex + 1, lines.length - 2)
 
-                // Remove dash line, header and extraneous TA2 data
+                // Find dash line - remove it, header and extraneous TA2 data
                 for (let i = 0; i < finalData.length; i++) {
                     if ((/^-+$/).test(finalData[i].trim())) {
                         header = finalData[i - 1]
-                        const patternStartIndex = Math.max(0, i - 5)
-                        const patternEndIndex = i + 1
-                        finalData.splice(patternStartIndex, patternEndIndex - patternStartIndex);
+                        const startIndex = Math.max(0, i - 5)
+                        const endIndex = i + 1
+                        finalData.splice(startIndex, endIndex - startIndex)
                         // Adjust the loop index to continue checking after the removed section
-                        i = patternStartIndex - 1
+                        i = startIndex - 1
                     }
                 }
 
@@ -60,61 +61,125 @@ class TXT {
         })
     }
 
-    readAllSales = async (path) => {
+    readAllSales = async (path, event) => {
+        const BATCH_SIZE = 200
         const allSales = {}
+
         return this.cleanFile(path)
-            .then(([term, headerIndices, finalData]) => {
-
+            .then(async ([term, headerIndices, finalData]) => {
                 // Loop through and consolidate data per ISBN
-                finalData.forEach((line) => {
-                    const Term = line.substring(headerIndices[0], headerIndices[1]).trim()
-                    const Course = line.substring(headerIndices[1], headerIndices[2]).trim()
-                    const Title = line.substring(headerIndices[2], headerIndices[3]).trim()
-                    const ISBN = line.substring(headerIndices[3], headerIndices[4]).trim().replace(/-/g, '')
-                    const Enrl = parseInt(line.substring(headerIndices[4], headerIndices[5]))
-                    const Sales = parseInt(line.substring(headerIndices[5], headerIndices[6]))
+                finalData.forEach(line => {
+                    const [
+                        Term,
+                        Course,
+                        Section,
+                        Professor,
+                        rawISBN,
+                        rawEstEnrl,
+                        rawActEnrl,
+                        rawEstSales,
+                        rawReorders,
+                        rawActSales
+                    ] = headerIndices.map((start, i) => line.substring(start, headerIndices[i + 1]).trim())
 
-                    // TODO: Don't count VST
-                    if (ISBN.startsWith('822') || ISBN.includes("** E BOOK **") || Title.startsWith('EBK')) {
+                    const ISBN = rawISBN.replace(/-/g, '')
+                    const EstEnrl = parseInt(rawEstEnrl) || 0
+                    const ActEnrl = parseInt(rawActEnrl) || 0
+                    const EstSales = parseInt(rawEstSales) || 0
+                    const Reorders = parseInt(rawReorders) || 0
+                    const ActSales = parseInt(rawActSales) || 0
+
+                    if (ISBN.startsWith('822') || ISBN.includes("** E BOOK **") || ISBN.includes("None")) {
                         return
                     }
 
-                    if (!allSales[ISBN]) {
-                        allSales[ISBN] = {
-                            Title: Title,
-                            Semesters: {},
-                            totalSales: 0,
-                            totalEnrl: 0,
-                            avgSE: 0
-                        }
-                    }
+                    if (allSales[ISBN]) {
+                        if (!allSales[ISBN]["semesters"][Term]) {
+                            if (Course.includes('SPEC') || Course.includes('CANC')) {
+                                allSales[ISBN].total_est_enrl += 0
+                                allSales[ISBN].total_act_enrl += 0
+                                allSales[ISBN].total_est_sales += 0
+                                allSales[ISBN].total_act_sales += 0
+                                allSales[ISBN].total_reorders += 0
+                            } else {
+                                allSales[ISBN].total_est_enrl += EstEnrl
+                                allSales[ISBN].total_act_enrl += ActEnrl
+                                allSales[ISBN].total_est_sales += EstSales
+                                allSales[ISBN].total_act_sales += ActSales
+                                allSales[ISBN].total_reorders += Reorders
+                            }
 
-                    if (!allSales[ISBN]["Semesters"][Term]) {
-                        allSales[ISBN]["Semesters"][Term] = {
-                            Courses: [],
-                            Enrl: null,
-                            Sales: null
+                            allSales[ISBN]["semesters"][Term] = {
+                                courses: [{ course: `${Course} ${Section}`, professor: Professor }],
+                                est_enrl: EstEnrl,
+                                act_enrl: ActEnrl,
+                                est_sales: EstSales,
+                                act_sales: ActSales,
+                                reorders: Reorders
+                            }
+                        } else {
+                            allSales[ISBN]["semesters"][Term].courses.push({ course: `${Course} ${Section}`, professor: Professor })
                         }
-                    }
-
-                    // Count sections only and keep track of dept/course
-                    const existingCourseIndex = allSales[ISBN]["Semesters"][Term].Courses.findIndex(course => course.Course === Course)
-                    if (existingCourseIndex === -1) {
-                        allSales[ISBN]["Semesters"][Term].Courses.push({ Course: Course.trim(), Sections: 1 })
                     } else {
-                        allSales[ISBN]["Semesters"][Term].Courses[existingCourseIndex].Sections++
+                        if (Course.includes('SPEC') || Course.includes('CANC')) {
+                            allSales[ISBN] = {
+                                semesters: {
+                                    [Term]: {
+                                        courses: [{ course: `${Course} ${Section}`, professor: Professor }],
+                                        est_enrl: EstEnrl,
+                                        act_enrl: ActEnrl,
+                                        est_sales: EstSales,
+                                        act_sales: ActSales,
+                                        reorders: Reorders
+                                    }
+                                },
+                                total_est_enrl: 0,
+                                total_act_enrl: 0,
+                                total_est_sales: 0,
+                                total_act_sales: 0,
+                                total_reorders: 0
+                            }
+                        } else {
+                            allSales[ISBN] = {
+                                semesters: {
+                                    [Term]: {
+                                        courses: [{ course: `${Course} ${Section}`, professor: Professor }],
+                                        est_enrl: EstEnrl,
+                                        act_enrl: ActEnrl,
+                                        est_sales: EstSales,
+                                        act_sales: ActSales,
+                                        reorders: Reorders
+                                    }
+                                },
+                                total_est_enrl: EstEnrl,
+                                total_act_enrl: ActEnrl,
+                                total_est_sales: EstSales,
+                                total_act_sales: ActSales,
+                                total_reorders: Reorders
+                            }
+                        }
                     }
-
-                    // Add to totalSales and totalEnrl only on first ISBN
-                    if (allSales[ISBN]["Semesters"][Term].Enrl === null && allSales[ISBN]["Semesters"][Term].Sales === null) {
-                        allSales[ISBN].totalSales += Sales
-                        allSales[ISBN].totalEnrl += Enrl
-                        allSales[ISBN]["Semesters"][Term].Enrl = Enrl
-                        allSales[ISBN]["Semesters"][Term].Sales = Sales
-                    }
-
-                    allSales[ISBN].avgSE = allSales[ISBN].totalEnrl > 0 ? (allSales[ISBN].totalSales / allSales[ISBN].totalEnrl).toFixed(4) : 0
                 })
+
+                const allISBNs = Object.keys(allSales)
+
+                // Batch through all ISBNs to not overload API, send progress to render process
+                const totalBatches = Math.ceil(allISBNs.length / BATCH_SIZE)
+
+                for (let i = 0; i < totalBatches; i++) {
+                    const start = i * BATCH_SIZE
+                    const end = start + BATCH_SIZE
+                    const batchPromises = allISBNs.slice(start, end).map(async (ISBN) => {
+                        const bookData = await fetchBookData(ISBN, allSales[ISBN])
+                        allSales[ISBN] = { ...bookData }
+                    })
+
+                    await Promise.all(batchPromises)
+                    const progress = (((i + 1) / totalBatches) * 100).toFixed(0)
+
+                    event.sender.send('progress-update', { progress: progress })
+                }
+                event.sender.send('progress-update', { progress: 100 })
                 return allSales
             })
             .catch((err) => {

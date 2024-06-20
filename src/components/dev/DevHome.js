@@ -5,6 +5,8 @@ export const DevHome = () => {
     const [filePath, setFilePath] = useState("")
     const [store, setStore] = useState(0)
     const [term, setTerm] = useState("")
+    const [progress, setProgress] = useState(0)
+    const [processingData, setProcessingData] = useState(false)
 
     const handleFileChange = (e) => {
         const { files } = e.currentTarget
@@ -25,8 +27,17 @@ export const DevHome = () => {
     }
 
     const handleFileSubmit = () => {
+        setProcessingData(true)
         window.ipcRenderer.send('new-sales', { path: filePath, store: store, term: term })
     }
+
+    window.ipcRenderer.on('progress-update', (event, data) => {
+        setProgress(data.progress)
+    })
+
+    window.ipcRenderer.on('sales-processed', () => {
+        setProcessingData(false)
+    })
 
     return (
         <div className="container-fluid bg-dark vh-100 mx-0 text-white">
@@ -39,27 +50,44 @@ export const DevHome = () => {
                     </Link>
                 </div>
             </div>
-            <div className="row mt-3">
-                <div className="col-2">
-                    <input type="text" className="form-control" onChange={handleTermChange} placeholder="Term" maxLength={1} />
-                </div>
-                <div className="col-2">
-                    <input type="number" className="form-control" onChange={handleStoreChange} placeholder="Store" />
-                </div>
-            </div>
-            <div className="row mt-2">
-                <div className="col-lg-4 col-sm-8">
-                    <div className="input-group">
-                        <input type="file" className="form-control" id="inputGroupFile" aria-describedby="inputGroupFile" aria-label="Upload" onChange={handleFileChange} />
-                        <button className="btn btn-outline-secondary" type="button" id="inputGroupFile" onClick={handleFileSubmit}>Submit</button>
+            {!processingData
+                ?
+                <>
+                    <div className="row mt-3">
+                        <div className="col-2">
+                            <input type="text" className="form-control" onChange={handleTermChange} placeholder="Term" maxLength={1} />
+                        </div>
+                        <div className="col-2">
+                            <input type="number" className="form-control" onChange={handleStoreChange} placeholder="Store" />
+                        </div>
                     </div>
-                </div>
-            </div>
-            <div className="row mt-1">
-                <div className="col">
-                    <small>Sequence: Term, Dept/Course, Title, ISBN, Act Enrl, Act Sales</small>
-                </div>
-            </div>
+                    <div className="row mt-2">
+                        <div className="col-lg-4 col-sm-8">
+                            <div className="input-group">
+                                <input type="file" className="form-control" id="inputGroupFile" aria-describedby="inputGroupFile" aria-label="Upload" onChange={handleFileChange} />
+                                <button className="btn btn-outline-secondary" type="button" id="inputGroupFile" onClick={handleFileSubmit}>Submit</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="row mt-1">
+                        <div className="col">
+                            <small>Sequence: Term, Dept/Course, Section, Professor, ISBN, Est Enrl, Act Enrl, Est Sales, Reorders, Act Sales</small>
+                        </div>
+                    </div>
+                </>
+                :
+                <>
+                    <div className="progress mt-5">
+                        <div className="progress-bar progress-bar-striped progress-bar-animated bg-info" role="progressbar"
+                            style={{ width: `${progress}%` }} aria-valuenow={progress} aria-valuemin="0" aria-valuemax="100">{`${progress}%`}</div>
+                    </div>
+                    <div className="row text-center">
+                        <div className="col">
+                            <small>Processing</small>
+                        </div>
+                    </div>
+                </>
+            }
         </div>
     )
 }

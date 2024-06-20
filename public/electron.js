@@ -250,8 +250,9 @@ const createWindow = async () => {
             })
         }
 
-        txt.readAllSales(data.path)
+        txt.readAllSales(data.path, event)
             .then((sales) => {
+                event.sender.send('sales-processed')
                 fs.writeFile(termPath, JSON.stringify(sales, null, 4), 'utf8', err => {
                     if (err) {
                         console.error(err)
@@ -261,9 +262,14 @@ const createWindow = async () => {
                         {
                             type: "info",
                             title: "OwlGuide",
-                            message: `Upload for store ${data.store} successful`
+                            message: `Success\n Store: ${data.store}\n Term: ${data.term}\n Total Titles: ${Object.keys(sales).length}`
                         })
                 })
+            })
+            .catch((err) => {
+                if (err) {
+                    console.error(err)
+                }
             })
     })
 }
