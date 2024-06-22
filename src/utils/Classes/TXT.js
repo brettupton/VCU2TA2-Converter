@@ -1,7 +1,7 @@
 const fs = require('fs')
 const path = require('path')
-const fetchBookData = require('../functions/dev/fetchBookData')
-const convertTitleCase = require('../functions/dev/convertTitleCase')
+const fetchBookData = require("../dev/fetchBookData")
+const convertTitleCase = require('../dev/convertTitleCase')
 
 class TXT {
     cleanFile = (path) => {
@@ -194,15 +194,18 @@ class TXT {
     readBD = async (TXTPath) => {
         return this.cleanFile(TXTPath)
             .then(([term, headerIndices, finalData]) => {
-                // Create new BD with TA2 file data
                 const prevAllSales = require(`../stores/${global.store}/sales/${term}.json`)
                 const BD = {}
 
                 finalData.forEach(line => {
-                    const Title = line.substring(headerIndices[0], headerIndices[1]).trim()
-                    const ISBN = (line.substring(headerIndices[1], headerIndices[2]).trim()).replace(/-/g, '')
-                    const Enrollment = parseInt(line.substring(headerIndices[2], headerIndices[3]).trim())
-                    const Decision = parseInt(line.substring(headerIndices[3], headerIndices[4]).trim())
+                    const [Title,
+                        rawISBN,
+                        rawEnrollment,
+                        rawDecision] = headerIndices.map((start, i) => line.substring(start, headerIndices[i + 1]).trim())
+
+                    const ISBN = rawISBN.replace(/-/g, '')
+                    const Enrollment = parseInt(rawEnrollment)
+                    const Decision = parseInt(rawDecision)
                     let avgSE = 0
 
                     if (ISBN.startsWith('822') || ISBN === 'None' || Title.startsWith('EBK')) {
@@ -212,7 +215,6 @@ class TXT {
                     if (!BD[ISBN]) {
                         if (prevAllSales[ISBN]) {
                             const prevSemester = Object.keys(prevAllSales[ISBN]["semesters"]).slice(-1)[0]
-                            console.log(prevSemester)
                             const prevSemesterEnrl = prevAllSales[ISBN]["semesters"][prevSemester]["act_enrl"]
                             const prevSemesterSales = prevAllSales[ISBN]["semesters"][prevSemester]["act_sales"]
 

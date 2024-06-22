@@ -2,8 +2,8 @@ import { useEffect, useState, useContext } from "react"
 import { Footer } from "./Footer"
 import { Link } from "react-router-dom"
 import { StoreContext } from "../index"
-import Owl from "../media/owl.png"
-import sound from "../media/pizzapizza.wav"
+import Owl from "../assets/media/owl.png"
+import sound from "../assets/media/pizzapizza.wav"
 
 export const Home = () => {
     const [isDev, setIsDev] = useState(false)

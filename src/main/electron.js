@@ -2,12 +2,12 @@ const path = require('path')
 const fs = require('fs')
 const { app, BrowserWindow, ipcMain, dialog } = require('electron')
 const isDev = (process.env.APP_DEV?.trim() === "true")
-const XLSXToCSVArr = require('../src/functions/enrollment/xlsx')
-const { matchUserOfferings, matchXLSXToCSV } = require('../src/functions/enrollment/match')
-const searchISBN = require('../src/functions/decisions/searchISBN')
-const matchPrevAdoptions = require('../src/functions/adoptions/match')
-const CSV = require('../src/classes/CSV')
-const TXT = require('../src/classes/TXT')
+const XLSXToCSVArr = require('../utils/enrollment/xlsx')
+const { matchUserOfferings, matchXLSXToCSV } = require('../utils/enrollment/match')
+const searchISBN = require('../utils/decisions/searchISBN')
+const matchPrevAdoptions = require('../utils/adoptions/match')
+const CSV = require('../utils/Classes/CSV')
+const TXT = require('../utils/Classes/TXT')
 
 
 try {
@@ -30,7 +30,7 @@ const createWindow = async () => {
         title: "OwlGuide",
         width: 830,
         height: 630,
-        icon: path.join(__dirname, "owl.ico"),
+        icon: path.join(__dirname, '../..', 'public/owl.ico'),
         webPreferences: {
             nodeIntegration: true,
             contextIsolation: false,
@@ -41,7 +41,7 @@ const createWindow = async () => {
     win.loadURL(
         isDev
             ? 'http://localhost:3000'
-            : `file://${path.join(__dirname, 'index.html')}`
+            : `file://${path.join(__dirname, '../..', 'public/index.html')}`
     )
 
     try {
